@@ -1,0 +1,29 @@
+function RequireIDToStartOnTrack(trackID):
+  #TODO
+  #this part uses the semaphores
+
+function SendPosUpdateToTrainThread(id, pos):
+  posUpdateQueue[id].put(pos)
+
+msg = getMessageFromQueue()
+elements = split(msg)
+cmd = elements[0]
+id = elements[1]
+switch cmd:
+  case "REG":
+    tracks = elements[2:elements.size()-1]
+    If (idIsRegistered(id) == FALSE
+        and allTracksExist(tracks)
+        and tracksAreACycle(tracks)):
+        lengths = trackLengths(tracks)
+        Accept the new train:
+          "ALLOW" + id + lengths.toString()
+        Register the ID with its track
+        RequireIDToStartOnTrack(tracks[0]):
+
+    else:
+        Refuse the new train:
+          "DENY" + id
+  case "POS":
+    pos = elements[2]
+    SendPosUpdateToTrainThread(id, pos)
