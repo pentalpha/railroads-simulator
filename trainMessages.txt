@@ -1,0 +1,35 @@
+function WaitToStartOnRail():
+	Wait for start message from the server
+	IF(start message = "ID START RAILX"):
+		rail to start = RAILX
+	ELSE:
+		abort
+	Set position to POS 0 of RAILX
+	While not reached the end of the track:
+	Advance train by speed
+	Send message with position updated to server:
+		"ID POS RAILX X"
+			X = the new position
+	Send message signaling that the train has reached the end of the track:
+		"ID POS RAILX MAX"
+	WaitToStartOnRail()
+		
+
+Train sends to the server a message to register itself:
+	"ID RAIL1 RAIL2 RAIL3 RAIL4"
+	ID = The train ID, any string
+	RAIL1, RAIL2... = Sequence of rail tracks, the path for the train to follow.
+	(all of the elements in the path must exist on the server, and they must form a closed cycle)
+	Standart: The train starts on the first rail tracks in the list.
+Train waits for an answer from the server, that can be:
+	"ID YES LENGTH1 LENGTH2 LENGTH3 LENGTH4"
+		LENGTH1, LENGTH2 = The length of the rail tracks.
+		Now, the train can start waiting for the message to start.
+	"ID NO"
+		No deal, exit
+WaitToStartOnRail()
+
+
+
+
+
