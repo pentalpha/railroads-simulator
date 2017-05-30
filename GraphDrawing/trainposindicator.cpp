@@ -7,7 +7,7 @@ TrainPosIndicator::TrainPosIndicator(sf::Vector2f pos)
     orphaned = false;
     dead = false;
     shape = sf::CircleShape(radius, 4);
-    shape.setPosition(pos.x - radius/2, pos.y - radius/2);
+    shape.setPosition(pos.x - radius, pos.y - radius);
     shape.setFillColor(initialColor);
 }
 

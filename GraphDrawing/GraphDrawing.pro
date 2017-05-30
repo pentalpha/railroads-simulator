@@ -23,12 +23,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
-SOURCES += main.cpp\
+SOURCES +=\
     RailroadsCanvas.cpp \
     RailroadsViewer.cpp \
     RailsGraph.cpp \
     rail.cpp \
-    trainposindicator.cpp
+    trainposindicator.cpp \
+    railroadViewerTest.cpp
 
 HEADERS  += \
     RailroadsCanvas.h \

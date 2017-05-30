@@ -4,7 +4,7 @@
 #include <chrono>
 #include <thread>
 
-RailroadsViewer::RailroadsViewer(int size, int padding, QWidget *parent)
+RailroadsViewer::RailroadsViewer(int size, int padding, std::string graphFilePath, bool test, QWidget *parent)
     : QMainWindow(parent)
 {
     this->setWindowTitle("Railroads Viewer");
@@ -12,16 +12,17 @@ RailroadsViewer::RailroadsViewer(int size, int padding, QWidget *parent)
                (RailroadsCanvas::gridBase*size)*RailroadsCanvas::gridHeigth + padding*2);
     this->resize(qsize.width(), qsize.height());
 
-    graph = new RailsGraph("/home/pentalpha/main/UFRN/2017.1/Lab. Projeto de S.O./railroads-simulator/min.graph");
+    graph = new RailsGraph(graphFilePath);
     graph->printAdj();
 
     canvas = new RailroadsCanvas(this, size, padding, graph);
     canvas->show();
-
-    std::thread testThread(&RailroadsViewer::testTrainIndicatorsA, this);
-    testThread.detach();
-    std::thread testThreadB(&RailroadsViewer::testTrainIndicatorsB, this);
-    testThreadB.detach();
+    if(test){
+        std::thread testThread(&RailroadsViewer::testTrainIndicatorsA, this);
+        testThread.detach();
+        std::thread testThreadB(&RailroadsViewer::testTrainIndicatorsB, this);
+        testThreadB.detach();
+    }
 }
 
 void RailroadsViewer::testTrainIndicatorsA(){
