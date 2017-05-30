@@ -1,0 +1,14 @@
+#include "mainwindow.h"
+#include "RailRoadsViewer.h"
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+{
+    RailroadsViewer* SFMLView = new RailroadsViewer(this, 4);
+    SFMLView->show();
+}
+
+MainWindow::~MainWindow()
+{
+
+}

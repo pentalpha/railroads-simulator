@@ -1,0 +1,10 @@
+[node] A 1 0|0 1|0
+[node] B 1 1|0 1|1
+[node] C 1 0|1 1|1
+[node] D 1 0|0 0|1
+[edges]
+A B
+B C
+C D
+D A
+[end-edges]
