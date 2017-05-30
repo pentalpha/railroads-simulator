@@ -43,6 +43,7 @@
 #define __UINTMAX_TYPE__ long unsigned int
 #define __linux 1
 #define __DEC32_EPSILON__ 1E-6DF
+#define __OPTIMIZE__ 1
 #define __unix 1
 #define __UINT32_MAX__ 4294967295U
 #define __GXX_EXPERIMENTAL_CXX0X__ 1
@@ -118,7 +119,6 @@
 #define __UINT16_MAX__ 65535
 #define __DBL_HAS_DENORM__ 1
 #define __UINT8_TYPE__ unsigned char
-#define __NO_INLINE__ 1
 #define __FLT_MANT_DIG__ 24
 #define __VERSION__ "4.9.2"
 #define __UINT64_C(c) c ## UL
