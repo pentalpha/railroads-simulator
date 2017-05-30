@@ -27,13 +27,15 @@ SOURCES += main.cpp\
     RailroadsCanvas.cpp \
     RailroadsViewer.cpp \
     RailsGraph.cpp \
-    rail.cpp
+    rail.cpp \
+    trainposindicator.cpp
 
 HEADERS  += \
     RailroadsCanvas.h \
     RailroadsViewer.h \
     RailsGraph.h \
-    rail.h
+    rail.h \
+    trainposindicator.h
 
 ### TO ALLOW QSFMLCanvas ###
 SOURCES += QSFMLCanvas.cpp

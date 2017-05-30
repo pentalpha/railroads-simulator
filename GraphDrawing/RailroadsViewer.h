@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "RailsGraph.h"
+#include "RailroadsCanvas.h"
 
 class RailroadsViewer : public QMainWindow
 {
@@ -10,8 +11,11 @@ class RailroadsViewer : public QMainWindow
 
 public:
     RailroadsViewer(int size, int padding, QWidget *parent = 0);
+    void testTrainIndicatorsA();
+    void testTrainIndicatorsB();
     ~RailroadsViewer();
     RailsGraph* graph;
+    RailroadsCanvas* canvas;
 };
 
 #endif // MAINWINDOW_H

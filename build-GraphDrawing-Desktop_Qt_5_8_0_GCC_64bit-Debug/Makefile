@@ -53,12 +53,14 @@ SOURCES       = ../GraphDrawing/main.cpp \
 		../GraphDrawing/RailroadsViewer.cpp \
 		../GraphDrawing/RailsGraph.cpp \
 		../GraphDrawing/rail.cpp \
+		../GraphDrawing/trainposindicator.cpp \
 		../GraphDrawing/QSFMLCanvas.cpp moc_RailroadsViewer.cpp
 OBJECTS       = main.o \
 		RailroadsCanvas.o \
 		RailroadsViewer.o \
 		RailsGraph.o \
 		rail.o \
+		trainposindicator.o \
 		QSFMLCanvas.o \
 		moc_RailroadsViewer.o
 DIST          = /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/spec_pre.prf \
@@ -231,11 +233,13 @@ DIST          = /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		../GraphDrawing/RailroadsViewer.h \
 		../GraphDrawing/RailsGraph.h \
 		../GraphDrawing/rail.h \
+		../GraphDrawing/trainposindicator.h \
 		../GraphDrawing/QSFMLCanvas.h ../GraphDrawing/main.cpp \
 		../GraphDrawing/RailroadsCanvas.cpp \
 		../GraphDrawing/RailroadsViewer.cpp \
 		../GraphDrawing/RailsGraph.cpp \
 		../GraphDrawing/rail.cpp \
+		../GraphDrawing/trainposindicator.cpp \
 		../GraphDrawing/QSFMLCanvas.cpp
 QMAKE_TARGET  = GraphDrawing
 DESTDIR       = 
@@ -604,8 +608,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../GraphDrawing/RailroadsCanvas.h ../GraphDrawing/RailroadsViewer.h ../GraphDrawing/RailsGraph.h ../GraphDrawing/rail.h ../GraphDrawing/QSFMLCanvas.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../GraphDrawing/main.cpp ../GraphDrawing/RailroadsCanvas.cpp ../GraphDrawing/RailroadsViewer.cpp ../GraphDrawing/RailsGraph.cpp ../GraphDrawing/rail.cpp ../GraphDrawing/QSFMLCanvas.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../GraphDrawing/RailroadsCanvas.h ../GraphDrawing/RailroadsViewer.h ../GraphDrawing/RailsGraph.h ../GraphDrawing/rail.h ../GraphDrawing/trainposindicator.h ../GraphDrawing/QSFMLCanvas.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../GraphDrawing/main.cpp ../GraphDrawing/RailroadsCanvas.cpp ../GraphDrawing/RailroadsViewer.cpp ../GraphDrawing/RailsGraph.cpp ../GraphDrawing/rail.cpp ../GraphDrawing/trainposindicator.cpp ../GraphDrawing/QSFMLCanvas.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -986,7 +990,9 @@ RailroadsCanvas.o: ../GraphDrawing/RailroadsCanvas.cpp ../GraphDrawing/Railroads
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtimer.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbasictimer.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QFrame \
-		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qframe.h
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qframe.h \
+		../GraphDrawing/RailsGraph.h \
+		../GraphDrawing/rail.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RailroadsCanvas.o ../GraphDrawing/RailroadsCanvas.cpp
 
 RailroadsViewer.o: ../GraphDrawing/RailroadsViewer.cpp ../GraphDrawing/RailroadsViewer.h \
@@ -1110,6 +1116,9 @@ RailsGraph.o: ../GraphDrawing/RailsGraph.cpp ../GraphDrawing/RailsGraph.h \
 
 rail.o: ../GraphDrawing/rail.cpp ../GraphDrawing/rail.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o rail.o ../GraphDrawing/rail.cpp
+
+trainposindicator.o: ../GraphDrawing/trainposindicator.cpp ../GraphDrawing/trainposindicator.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o trainposindicator.o ../GraphDrawing/trainposindicator.cpp
 
 QSFMLCanvas.o: ../GraphDrawing/QSFMLCanvas.cpp ../GraphDrawing/QSFMLCanvas.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qwidget.h \

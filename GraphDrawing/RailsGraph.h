@@ -39,7 +39,7 @@ protected:
     }
 public:
     RailsGraph(std::string graphFilePath);
-
+    ~RailsGraph();
     inline Rail* getRail(std::string name){
         return rails[name];
     }

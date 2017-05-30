@@ -10,6 +10,12 @@ const std::string RailsGraph::nodeTag="[node]";
 const std::string RailsGraph::edgesTag="[edges]";
 const std::string RailsGraph::edgesEndTag="[end-edges]";
 
+RailsGraph::~RailsGraph(){
+    for(std::pair<string, Rail*> railPair : rails){
+        delete railPair.second;
+    }
+}
+
 RailsGraph::RailsGraph(std::string graphFilePath)
 {
     std::ifstream input(graphFilePath);
