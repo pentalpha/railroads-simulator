@@ -4,7 +4,7 @@
 #include <chrono>
 #include <thread>
 
-RailroadsViewer::RailroadsViewer(int size, int padding, std::string graphFilePath, bool test, QWidget *parent)
+RailroadsViewer::RailroadsViewer(int size, int padding, RailsGraph* graph, bool test, QWidget *parent)
     : QMainWindow(parent)
 {
     this->setWindowTitle("Railroads Viewer");
@@ -12,7 +12,9 @@ RailroadsViewer::RailroadsViewer(int size, int padding, std::string graphFilePat
                (RailroadsCanvas::gridBase*size)*RailroadsCanvas::gridHeigth + padding*2);
     this->resize(qsize.width(), qsize.height());
 
-    graph = new RailsGraph(graphFilePath);
+
+
+    this->graph = graph;
     graph->printAdj();
 
     canvas = new RailroadsCanvas(this, size, padding, graph);

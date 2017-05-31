@@ -16,7 +16,9 @@ SOURCES += main.cpp \
     RailroadsCanvas.cpp \
     RailroadsViewer.cpp \
     RailsGraph.cpp \
-    trainposindicator.cpp
+    trainposindicator.cpp \
+    setupdialog.cpp \
+    global.cpp
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -37,7 +39,9 @@ HEADERS += \
     RailroadsCanvas.h \
     RailroadsViewer.h \
     RailsGraph.h \
-    trainposindicator.h
+    trainposindicator.h \
+    setupdialog.h \
+    global.h
 
 ### TO ALLOW QSFMLCanvas ###
 INCLUDEPATH += /usr/include/SFML
@@ -46,3 +50,6 @@ CONFIG(release, debug|release):
 LIBS += -lsfml-audio -lsfml-graphics -lsfml-network -lsfml-window -lsfml-system
 CONFIG(debug, debug|release):
 LIBS += -lsfml-audio -lsfml-graphics -lsfml-network -lsfml-window -lsfml-system
+
+FORMS += \
+    setupdialog.ui

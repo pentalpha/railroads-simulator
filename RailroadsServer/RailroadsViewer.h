@@ -10,7 +10,7 @@ class RailroadsViewer : public QMainWindow
     Q_OBJECT
 
 public:
-    RailroadsViewer(int size, int padding, std::string graphFilePath, bool test = false, QWidget *parent = 0);
+    RailroadsViewer(int size, int padding, RailsGraph* graph, bool test = false, QWidget *parent = 0);
     void testTrainIndicatorsA();
     void testTrainIndicatorsB();
     ~RailroadsViewer();

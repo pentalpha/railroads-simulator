@@ -15,7 +15,7 @@ CXX           = g++
 DEFINES       = -DQT_DEPRECATED_WARNINGS -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -O2 -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I../RailroadsServer -I. -isystem /usr/include/SFML -I/home/pentalpha/qt/5.8/gcc_64/include -I/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets -I/home/pentalpha/qt/5.8/gcc_64/include/QtGui -I/home/pentalpha/qt/5.8/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I/home/pentalpha/qt/5.8/gcc_64/mkspecs/linux-g++
+INCPATH       = -I../RailroadsServer -I. -isystem /usr/include/SFML -I/home/pentalpha/qt/5.8/gcc_64/include -I/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets -I/home/pentalpha/qt/5.8/gcc_64/include/QtGui -I/home/pentalpha/qt/5.8/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I. -I/home/pentalpha/qt/5.8/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/pentalpha/qt/5.8/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -54,7 +54,10 @@ SOURCES       = ../RailroadsServer/main.cpp \
 		../RailroadsServer/RailroadsCanvas.cpp \
 		../RailroadsServer/RailroadsViewer.cpp \
 		../RailroadsServer/RailsGraph.cpp \
-		../RailroadsServer/trainposindicator.cpp moc_RailroadsViewer.cpp
+		../RailroadsServer/trainposindicator.cpp \
+		../RailroadsServer/setupdialog.cpp \
+		../RailroadsServer/global.cpp moc_RailroadsViewer.cpp \
+		moc_setupdialog.cpp
 OBJECTS       = main.o \
 		QSFMLCanvas.o \
 		rail.o \
@@ -62,7 +65,10 @@ OBJECTS       = main.o \
 		RailroadsViewer.o \
 		RailsGraph.o \
 		trainposindicator.o \
-		moc_RailroadsViewer.o
+		setupdialog.o \
+		global.o \
+		moc_RailroadsViewer.o \
+		moc_setupdialog.o
 DIST          = /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		/home/pentalpha/qt/5.8/gcc_64/mkspecs/common/unix.conf \
 		/home/pentalpha/qt/5.8/gcc_64/mkspecs/common/linux.conf \
@@ -233,13 +239,17 @@ DIST          = /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		../RailroadsServer/RailroadsCanvas.h \
 		../RailroadsServer/RailroadsViewer.h \
 		../RailroadsServer/RailsGraph.h \
-		../RailroadsServer/trainposindicator.h ../RailroadsServer/main.cpp \
+		../RailroadsServer/trainposindicator.h \
+		../RailroadsServer/setupdialog.h \
+		../RailroadsServer/global.h ../RailroadsServer/main.cpp \
 		../RailroadsServer/QSFMLCanvas.cpp \
 		../RailroadsServer/rail.cpp \
 		../RailroadsServer/RailroadsCanvas.cpp \
 		../RailroadsServer/RailroadsViewer.cpp \
 		../RailroadsServer/RailsGraph.cpp \
-		../RailroadsServer/trainposindicator.cpp
+		../RailroadsServer/trainposindicator.cpp \
+		../RailroadsServer/setupdialog.cpp \
+		../RailroadsServer/global.cpp
 QMAKE_TARGET  = RailroadsServer
 DESTDIR       = 
 TARGET        = RailroadsServer
@@ -248,7 +258,7 @@ TARGET        = RailroadsServer
 first: all
 ####### Build rules
 
-$(TARGET):  $(OBJECTS)  
+$(TARGET): ui_setupdialog.h $(OBJECTS)  
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 Makefile: ../RailroadsServer/RailroadsServer.pro /home/pentalpha/qt/5.8/gcc_64/mkspecs/linux-g++/qmake.conf /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/spec_pre.prf \
@@ -605,8 +615,9 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../RailroadsServer/QSFMLCanvas.h ../RailroadsServer/rail.h ../RailroadsServer/RailroadsCanvas.h ../RailroadsServer/RailroadsViewer.h ../RailroadsServer/RailsGraph.h ../RailroadsServer/trainposindicator.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../RailroadsServer/main.cpp ../RailroadsServer/QSFMLCanvas.cpp ../RailroadsServer/rail.cpp ../RailroadsServer/RailroadsCanvas.cpp ../RailroadsServer/RailroadsViewer.cpp ../RailroadsServer/RailsGraph.cpp ../RailroadsServer/trainposindicator.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../RailroadsServer/QSFMLCanvas.h ../RailroadsServer/rail.h ../RailroadsServer/RailroadsCanvas.h ../RailroadsServer/RailroadsViewer.h ../RailroadsServer/RailsGraph.h ../RailroadsServer/trainposindicator.h ../RailroadsServer/setupdialog.h ../RailroadsServer/global.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../RailroadsServer/main.cpp ../RailroadsServer/QSFMLCanvas.cpp ../RailroadsServer/rail.cpp ../RailroadsServer/RailroadsCanvas.cpp ../RailroadsServer/RailroadsViewer.cpp ../RailroadsServer/RailsGraph.cpp ../RailroadsServer/trainposindicator.cpp ../RailroadsServer/setupdialog.cpp ../RailroadsServer/global.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../RailroadsServer/setupdialog.ui $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -638,9 +649,9 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/data/dummy.cpp
 	g++ -pipe -O2 -std=gnu++11 -Wall -W -dM -E -o moc_predefs.h /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_RailroadsViewer.cpp
+compiler_moc_header_make_all: moc_RailroadsViewer.cpp moc_setupdialog.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_RailroadsViewer.cpp
+	-$(DEL_FILE) moc_RailroadsViewer.cpp moc_setupdialog.cpp
 moc_RailroadsViewer.cpp: /home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QMainWindow \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qmainwindow.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
@@ -759,22 +770,10 @@ moc_RailroadsViewer.cpp: /home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QMainWi
 		/home/pentalpha/qt/5.8/gcc_64/bin/moc
 	/home/pentalpha/qt/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/pentalpha/qt/5.8/gcc_64/mkspecs/linux-g++ -I'/home/pentalpha/main/UFRN/2017.1/Lab. Projeto de S.O./railroads-simulator/RailroadsServer' -I/usr/include/SFML -I/home/pentalpha/qt/5.8/gcc_64/include -I/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets -I/home/pentalpha/qt/5.8/gcc_64/include/QtGui -I/home/pentalpha/qt/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.9 -I/usr/include/x86_64-linux-gnu/c++/4.9 -I/usr/include/c++/4.9/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../RailroadsServer/RailroadsViewer.h -o moc_RailroadsViewer.cpp
 
-compiler_moc_source_make_all:
-compiler_moc_source_clean:
-compiler_uic_make_all:
-compiler_uic_clean:
-compiler_yacc_decl_make_all:
-compiler_yacc_decl_clean:
-compiler_yacc_impl_make_all:
-compiler_yacc_impl_clean:
-compiler_lex_make_all:
-compiler_lex_clean:
-compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean 
-
-####### Compile
-
-main.o: ../RailroadsServer/main.cpp /home/pentalpha/qt/5.8/gcc_64/include/QtCore/QCoreApplication \
-		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcoreapplication.h \
+moc_setupdialog.cpp: /home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QDialog \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qdialog.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtguiglobal.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qglobal.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qconfig-bootstrapped.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qconfig.h \
@@ -797,6 +796,135 @@ main.o: ../RailroadsServer/main.cpp /home/pentalpha/qt/5.8/gcc_64/include/QtCore
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmutex.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qnumeric.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qversiontagging.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtgui-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qwidget.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qwindowdefs.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobjectdefs.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qnamespace.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qwindowdefs_win.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobject.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstring.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qchar.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbytearray.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qrefcount.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qarraydata.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstringbuilder.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qlist.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qalgorithms.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qiterator.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qhashfunctions.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qpair.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbytearraylist.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstringlist.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qregexp.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstringmatcher.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcoreevent.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qscopedpointer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmetatype.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvarlengtharray.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcontainerfwd.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobject_impl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmargins.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpaintdevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qrect.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsize.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qpoint.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpalette.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qcolor.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qrgb.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qrgba64.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qbrush.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvector.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qmatrix.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpolygon.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qregion.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qdatastream.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qiodevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qline.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtransform.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpainterpath.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qimage.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpixelformat.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpixmap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsharedpointer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qshareddata.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qhash.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfont.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfontmetrics.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfontinfo.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qsizepolicy.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qcursor.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qkeysequence.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qevent.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvariant.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qdebug.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtextstream.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qlocale.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qset.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcontiguouscache.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qurl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qurlquery.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qfile.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qfiledevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qvector2d.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtouchdevice.h \
+		../RailroadsServer/setupdialog.h \
+		moc_predefs.h \
+		/home/pentalpha/qt/5.8/gcc_64/bin/moc
+	/home/pentalpha/qt/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/pentalpha/qt/5.8/gcc_64/mkspecs/linux-g++ -I'/home/pentalpha/main/UFRN/2017.1/Lab. Projeto de S.O./railroads-simulator/RailroadsServer' -I/usr/include/SFML -I/home/pentalpha/qt/5.8/gcc_64/include -I/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets -I/home/pentalpha/qt/5.8/gcc_64/include/QtGui -I/home/pentalpha/qt/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.9 -I/usr/include/x86_64-linux-gnu/c++/4.9 -I/usr/include/c++/4.9/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../RailroadsServer/setupdialog.h -o moc_setupdialog.cpp
+
+compiler_moc_source_make_all:
+compiler_moc_source_clean:
+compiler_uic_make_all: ui_setupdialog.h
+compiler_uic_clean:
+	-$(DEL_FILE) ui_setupdialog.h
+ui_setupdialog.h: ../RailroadsServer/setupdialog.ui \
+		/home/pentalpha/qt/5.8/gcc_64/bin/uic
+	/home/pentalpha/qt/5.8/gcc_64/bin/uic ../RailroadsServer/setupdialog.ui -o ui_setupdialog.h
+
+compiler_yacc_decl_make_all:
+compiler_yacc_decl_clean:
+compiler_yacc_impl_make_all:
+compiler_yacc_impl_clean:
+compiler_lex_make_all:
+compiler_lex_clean:
+compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean compiler_uic_clean 
+
+####### Compile
+
+main.o: ../RailroadsServer/main.cpp /home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QApplication \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qapplication.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtguiglobal.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qglobal.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qconfig.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtcore-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsystemdetection.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qprocessordetection.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcompilerdetection.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtypeinfo.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsysinfo.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qlogging.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qflags.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtypetraits.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbasicatomic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qgenericatomic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic_cxx11.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic_msvc.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qglobalstatic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmutex.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qnumeric.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qversiontagging.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtgui-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcoreapplication.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstring.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qchar.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbytearray.h \
@@ -822,7 +950,62 @@ main.o: ../RailroadsServer/main.cpp /home/pentalpha/qt/5.8/gcc_64/include/QtCore
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvarlengtharray.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcontainerfwd.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobject_impl.h \
-		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qeventloop.h
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qeventloop.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qwindowdefs.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qwindowdefs_win.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qpoint.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsize.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qcursor.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qwidget.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmargins.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpaintdevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qrect.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpalette.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qcolor.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qrgb.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qrgba64.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qbrush.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvector.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qmatrix.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpolygon.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qregion.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qdatastream.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qiodevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qline.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtransform.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpainterpath.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qimage.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpixelformat.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpixmap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsharedpointer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qshareddata.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qhash.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfont.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfontmetrics.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfontinfo.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qsizepolicy.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qkeysequence.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qevent.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvariant.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qdebug.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtextstream.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qlocale.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qset.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcontiguouscache.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qurl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qurlquery.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qfile.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qfiledevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qvector2d.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtouchdevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qguiapplication.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qinputmethod.h \
+		../RailroadsServer/setupdialog.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QDialog \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qdialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../RailroadsServer/main.cpp
 
 QSFMLCanvas.o: ../RailroadsServer/QSFMLCanvas.cpp ../RailroadsServer/QSFMLCanvas.h \
@@ -1171,8 +1354,170 @@ RailsGraph.o: ../RailroadsServer/RailsGraph.cpp ../RailroadsServer/RailsGraph.h 
 trainposindicator.o: ../RailroadsServer/trainposindicator.cpp ../RailroadsServer/trainposindicator.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o trainposindicator.o ../RailroadsServer/trainposindicator.cpp
 
+setupdialog.o: ../RailroadsServer/setupdialog.cpp ../RailroadsServer/setupdialog.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QDialog \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qdialog.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtguiglobal.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qglobal.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qconfig.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtcore-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsystemdetection.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qprocessordetection.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcompilerdetection.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtypeinfo.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsysinfo.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qlogging.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qflags.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtypetraits.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbasicatomic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qgenericatomic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic_cxx11.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic_msvc.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qglobalstatic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmutex.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qnumeric.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qversiontagging.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtgui-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qwidget.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qwindowdefs.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobjectdefs.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qnamespace.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qwindowdefs_win.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobject.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstring.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qchar.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbytearray.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qrefcount.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qarraydata.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstringbuilder.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qlist.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qalgorithms.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qiterator.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qhashfunctions.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qpair.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbytearraylist.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstringlist.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qregexp.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstringmatcher.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcoreevent.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qscopedpointer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmetatype.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvarlengtharray.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcontainerfwd.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobject_impl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmargins.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpaintdevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qrect.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsize.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qpoint.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpalette.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qcolor.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qrgb.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qrgba64.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qbrush.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvector.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qmatrix.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpolygon.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qregion.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qdatastream.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qiodevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qline.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtransform.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpainterpath.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qimage.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpixelformat.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpixmap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsharedpointer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qshareddata.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qhash.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfont.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfontmetrics.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfontinfo.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qsizepolicy.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qcursor.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qkeysequence.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qevent.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvariant.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qdebug.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtextstream.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qlocale.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qset.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcontiguouscache.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qurl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qurlquery.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qfile.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qfiledevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qvector2d.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtouchdevice.h \
+		ui_setupdialog.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/QVariant \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QAction \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qaction.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qicon.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qactiongroup.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QApplication \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qapplication.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcoreapplication.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qeventloop.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qguiapplication.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qinputmethod.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QButtonGroup \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qbuttongroup.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QDialogButtonBox \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qdialogbuttonbox.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QHeaderView \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qheaderview.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qframe.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qstyleoption.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qvalidator.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qregularexpression.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qslider.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qabstractslider.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qstyle.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtabbar.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtabwidget.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qrubberband.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QLabel \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qlabel.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QLineEdit \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qlineedit.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtextcursor.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtextformat.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpen.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtextoption.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QSpacerItem \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qlayoutitem.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QVBoxLayout \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qboxlayout.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qlayout.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qgridlayout.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QWidget \
+		../RailroadsServer/global.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o setupdialog.o ../RailroadsServer/setupdialog.cpp
+
+global.o: ../RailroadsServer/global.cpp ../RailroadsServer/global.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o global.o ../RailroadsServer/global.cpp
+
 moc_RailroadsViewer.o: moc_RailroadsViewer.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RailroadsViewer.o moc_RailroadsViewer.cpp
+
+moc_setupdialog.o: moc_setupdialog.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_setupdialog.o moc_setupdialog.cpp
 
 ####### Install
 
