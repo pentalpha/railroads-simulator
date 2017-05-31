@@ -2,7 +2,7 @@
 #include "logging.h"
 
 Server::Server(const char* localIP, int port){
-  this->localIP = string(localIP);
+  this->localIP = std::string(localIP);
   this->port = port;
   sizeAddressClient = sizeof(struct sockaddr);
   msg = new char[MAXMSG+1];
@@ -55,7 +55,7 @@ bool Server::doBind(){
   //Conectando o socket a uma porta. Executado apenas no lado servidor
   if (bind (socketId, (struct sockaddr *)&address, sizeof(struct sockaddr)) == -1)
   {
-    log("SERVER", string("Failed to bind() a port (") + to_string(port));
+    log("SERVER", std::string("Failed to bind() a port (") + std::to_string(port));
     return false;
   }else{
     return true;
@@ -66,7 +66,7 @@ bool Server::startListening(){
   //Habilitando o servidor a receber conexoes do cliente
   if (listen( socketId, 10 ) == -1)
   {
-      log("SERVER", string("Failed to listen() on ") + localIP + string("::") + to_string(port));
+      log("SERVER", std::string("Failed to listen() on ") + localIP + std::string("::") + std::to_string(port));
       return false;
   }else{
       return true;
@@ -78,12 +78,34 @@ bool Server::isConnected(){
 }
 
 void Server::putMessage(std::string msgToSend){
-    string* bytes = new string(msgToSend.c_str());
-    sendQueue.push(bytes);
+    //std::string* bytes = new std::string(msgToSend.c_str());
+    //sendQueue.push(bytes);
+    m.lock();
+    const char* bytesToSend = msgToSend.c_str();
+    int bytesSent = send(connectionClientId, bytesToSend, strlen(bytesToSend), 0);
+    if (bytesSent == 0)
+    {
+        log("SERVER", "Message sent: \nZero bytes, client finished connection");
+        return;
+    }
+    else if(bytesSent<0)
+    {
+        error("SERVER", "ERROR: send returned an error" + std::to_string(errno));
+        //cerr << "ERROR: send returned an error "<<errno<< endl; // this case is triggered
+        return;
+    }else if (bytesSent < strlen(bytesToSend)){
+        log("SERVER", std::string("Message sent with less characters: \n") + std::string(bytesToSend, bytesSent));
+    }else if (bytesSent > strlen(bytesToSend)){
+        log("SERVER", std::string("Message sent with extra characters: \n")
+            + std::string(bytesToSend) + std::string("+") + std::to_string(bytesSent-strlen(bytesToSend)));
+    }else{
+        log("SERVER", std::string("Message sent: \n") + std::string(bytesToSend));
+    }
+    m.unlock();
 }
 
-string Server::getMessage(){
-  string *msg = messages.pop();
+std::string Server::getMessage(){
+  std::string *msg = messages.pop();
   if(msg == NULL){
     return "";
   }else{
@@ -94,7 +116,7 @@ string Server::getMessage(){
 void Server::startWaiting(){
   exitFlag = false;
   waitingFlag = true;
-  thread theThread = thread(&Server::waitForClientAndReceive, this);
+  std::thread theThread = std::thread(&Server::waitForClientAndReceive, this);
   theThread.detach();
 }
 
@@ -113,7 +135,7 @@ void Server::waitForClientAndReceive(){
   log("SERVER", "Waiting for client...");
   connectionClientId = accept( socketId,(struct sockaddr *) &addressClient,&sizeAddressClient );
 
-  log("SERVER", string("Client connected: ") + string(inet_ntoa(addressClient.sin_addr)));
+  log("SERVER", std::string("Client connected: ") + std::string(inet_ntoa(addressClient.sin_addr)));
   waitingFlag = false;
   connected = true;
   //Verificando erros
@@ -123,9 +145,9 @@ void Server::waitForClientAndReceive(){
       return;
   }
   std::thread recvThread(&Server::receive, this);
-  std::thread sendThread(&Server::sendAll, this);
+  //std::thread sendThread(&Server::sendAll, this);
   recvThread.detach();
-  sendThread.detach();
+  //sendThread.detach();
 }
 
 void Server::receive(){
@@ -145,8 +167,8 @@ void Server::receive(){
       }
       //Inserir o caracter de fim de mensagem
       msg[bytesread] = '\0';
-      log("SERVER", string("Message received: \n") + msg);
-      string *s = new string(msg);
+      log("SERVER", std::string("Message received: \n") + msg);
+      std::string *s = new std::string(msg);
       messages.push(s);
       //close(connectionClientId);
     }
@@ -156,7 +178,7 @@ void Server::receive(){
     log("SERVER", "Connection to client finished, not receiving anymore");
 }
 
-void Server::sendAll(){
+/*void Server::sendAll(){
     while(!exitFlag){
         std::string* toSend = sendQueue.pop();
         if(toSend != NULL){
@@ -173,11 +195,11 @@ void Server::sendAll(){
                 //cerr << "ERROR: send returned an error "<<errno<< endl; // this case is triggered
                 //return n;
             }else{
-                log("SERVER", string("Message sent: \n") + string(bytesToSend, MAXMSG));
+                log("SERVER", std::string("Message sent: \n") + std::string(bytesToSend, MAXMSG));
             }
             delete toSend;
             delete bytesToSend;
         }
     }
     log("SERVER", "Connection to client finished, not sending anymore");
-}
+}*/

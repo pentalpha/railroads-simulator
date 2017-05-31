@@ -6,7 +6,7 @@
 class RailroadsServer : public Server
 {
 public:
-    RailroadsServer(string ip, int port);
+    RailroadsServer(std::string ip, int port);
 };
 
 #endif // RAILROADSSERVER_H

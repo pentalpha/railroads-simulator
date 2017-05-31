@@ -12,12 +12,11 @@
 #include "StringQueue.h"
 #include <string>
 #include <thread>
+#include <mutex>
 #include "logging.h"
 
 #define MAXMSG 1024
 #define PORTNUM 50001
-
-using namespace std;
 
 class Server{
 public:
@@ -28,7 +27,7 @@ public:
   bool isConnected();
   bool isWaiting();
   void stop();
-  string getMessage();
+  std::string getMessage();
   void putMessage(std::string msgToSend);
 
 private:
@@ -46,7 +45,7 @@ private:
   struct sockaddr_in address;
   int socketId;
   //metadata not c-related
-  string localIP;
+  std::string localIP;
   int port;
   bool connected;
   //variáveis relacionadas com as conexões clientes
@@ -57,7 +56,9 @@ private:
   char *msg;
   int bytesread;
 
-  StringQueue messages, sendQueue;
+  std::mutex m;
+
+  StringQueue messages;
 };
 
 #endif

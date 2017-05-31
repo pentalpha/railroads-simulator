@@ -6,20 +6,18 @@
 #include <mutex>
 #include <string>
 
-using namespace std;
-
 class StringQueue
 {
  public:
-  string* pop();
-  void push(string* item);
+  std::string* pop();
+  void push(std::string* item);
 
   StringQueue()=default;
   StringQueue(const StringQueue&) = delete;            // disable copying
   StringQueue& operator=(const StringQueue&) = delete; // disable assignment
  private:
-  queue<string*> strings;
-  mutex localMutex;
+  std::queue<std::string*> strings;
+  std::mutex localMutex;
 };
 
 #endif
