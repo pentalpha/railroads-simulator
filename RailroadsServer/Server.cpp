@@ -44,7 +44,7 @@ bool Server::getSocket(){
   //Verificar erros
   if (socketId == -1)
   {
-      std::cout << "[SERVER] Failed to create socket()\n";
+      Global::log("SERVER", "Failed to create socket()");
       return false;
   }
   return true;
@@ -54,7 +54,7 @@ bool Server::doBind(){
   //Conectando o socket a uma porta. Executado apenas no lado servidor
   if (bind (socketId, (struct sockaddr *)&address, sizeof(struct sockaddr)) == -1)
   {
-    std::cout << "[SERVER] Failed to bind() a port ("<< port << ")\n";
+    Global::log("SERVER", string("Failed to bind() a port (") + to_string(port));
     return false;
   }else{
     return true;
@@ -65,7 +65,7 @@ bool Server::startListening(){
   //Habilitando o servidor a receber conexoes do cliente
   if (listen( socketId, 10 ) == -1)
   {
-      std::cout << "[SERVER] Failed to listen() on " << localIP << "::" << port << "\n";
+      Global::log("SERVER", string("Failed to listen() on ") + localIP + string("::") + to_string(port));
       return false;
   }else{
       return true;
@@ -93,7 +93,8 @@ string Server::getMessage(){
 void Server::startWaiting(){
   exitFlag = false;
   waitingFlag = true;
-  waitForClientAndReceive();
+  thread theThread = thread(&Server::waitForClientAndReceive, this);
+  theThread.detach();
 }
 
 void Server::stop(){
@@ -106,21 +107,18 @@ bool Server::isWaiting(){
 }
 
 void Server::waitForClientAndReceive(){
-  //servidor ficar em um loop infinito
-  std::cout << "[SERVER] Waiting for a client\n";
-
   waitingFlag = true;
   //Servidor fica bloqueado esperando uma conexão do cliente
-  std::cout << "[SERVER] Waiting for client..." << std::endl;
+  Global::log("SERVER", "Waiting for client...");
   connectionClientId = accept( socketId,(struct sockaddr *) &addressClient,&sizeAddressClient );
 
-  std::cout << "[SERVER] Client connected: " << inet_ntoa(addressClient.sin_addr) << "\n";
+  Global::log("SERVER", string("Client connected: ") + string(inet_ntoa(addressClient.sin_addr)));
   waitingFlag = false;
   connected = true;
   //Verificando erros
   if ( connectionClientId == -1)
   {
-      std::cout << "[SERVER] Failed to accept() a client\n";
+      Global::log("SERVER", "Failed to accept() a client");
       return;
   }
   std::thread recvThread(&Server::receive, this);
