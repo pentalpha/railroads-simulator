@@ -18,7 +18,10 @@ SOURCES += main.cpp \
     RailsGraph.cpp \
     trainposindicator.cpp \
     setupdialog.cpp \
-    global.cpp
+    global.cpp \
+    Queue.cpp \
+    StringQueue.cpp \
+    Server.cpp
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -41,7 +44,10 @@ HEADERS += \
     RailsGraph.h \
     trainposindicator.h \
     setupdialog.h \
-    global.h
+    global.h \
+    Queue.h \
+    StringQueue.h \
+    Server.h
 
 ### TO ALLOW QSFMLCanvas ###
 INCLUDEPATH += /usr/include/SFML

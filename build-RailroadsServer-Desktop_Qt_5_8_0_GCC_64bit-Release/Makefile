@@ -56,7 +56,10 @@ SOURCES       = ../RailroadsServer/main.cpp \
 		../RailroadsServer/RailsGraph.cpp \
 		../RailroadsServer/trainposindicator.cpp \
 		../RailroadsServer/setupdialog.cpp \
-		../RailroadsServer/global.cpp moc_RailroadsViewer.cpp \
+		../RailroadsServer/global.cpp \
+		../RailroadsServer/Queue.cpp \
+		../RailroadsServer/StringQueue.cpp \
+		../RailroadsServer/Server.cpp moc_RailroadsViewer.cpp \
 		moc_setupdialog.cpp
 OBJECTS       = main.o \
 		QSFMLCanvas.o \
@@ -67,6 +70,9 @@ OBJECTS       = main.o \
 		trainposindicator.o \
 		setupdialog.o \
 		global.o \
+		Queue.o \
+		StringQueue.o \
+		Server.o \
 		moc_RailroadsViewer.o \
 		moc_setupdialog.o
 DIST          = /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/spec_pre.prf \
@@ -241,7 +247,10 @@ DIST          = /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		../RailroadsServer/RailsGraph.h \
 		../RailroadsServer/trainposindicator.h \
 		../RailroadsServer/setupdialog.h \
-		../RailroadsServer/global.h ../RailroadsServer/main.cpp \
+		../RailroadsServer/global.h \
+		../RailroadsServer/Queue.h \
+		../RailroadsServer/StringQueue.h \
+		../RailroadsServer/Server.h ../RailroadsServer/main.cpp \
 		../RailroadsServer/QSFMLCanvas.cpp \
 		../RailroadsServer/rail.cpp \
 		../RailroadsServer/RailroadsCanvas.cpp \
@@ -249,7 +258,10 @@ DIST          = /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		../RailroadsServer/RailsGraph.cpp \
 		../RailroadsServer/trainposindicator.cpp \
 		../RailroadsServer/setupdialog.cpp \
-		../RailroadsServer/global.cpp
+		../RailroadsServer/global.cpp \
+		../RailroadsServer/Queue.cpp \
+		../RailroadsServer/StringQueue.cpp \
+		../RailroadsServer/Server.cpp
 QMAKE_TARGET  = RailroadsServer
 DESTDIR       = 
 TARGET        = RailroadsServer
@@ -615,8 +627,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /home/pentalpha/qt/5.8/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../RailroadsServer/QSFMLCanvas.h ../RailroadsServer/rail.h ../RailroadsServer/RailroadsCanvas.h ../RailroadsServer/RailroadsViewer.h ../RailroadsServer/RailsGraph.h ../RailroadsServer/trainposindicator.h ../RailroadsServer/setupdialog.h ../RailroadsServer/global.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../RailroadsServer/main.cpp ../RailroadsServer/QSFMLCanvas.cpp ../RailroadsServer/rail.cpp ../RailroadsServer/RailroadsCanvas.cpp ../RailroadsServer/RailroadsViewer.cpp ../RailroadsServer/RailsGraph.cpp ../RailroadsServer/trainposindicator.cpp ../RailroadsServer/setupdialog.cpp ../RailroadsServer/global.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../RailroadsServer/QSFMLCanvas.h ../RailroadsServer/rail.h ../RailroadsServer/RailroadsCanvas.h ../RailroadsServer/RailroadsViewer.h ../RailroadsServer/RailsGraph.h ../RailroadsServer/trainposindicator.h ../RailroadsServer/setupdialog.h ../RailroadsServer/global.h ../RailroadsServer/Queue.h ../RailroadsServer/StringQueue.h ../RailroadsServer/Server.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../RailroadsServer/main.cpp ../RailroadsServer/QSFMLCanvas.cpp ../RailroadsServer/rail.cpp ../RailroadsServer/RailroadsCanvas.cpp ../RailroadsServer/RailroadsViewer.cpp ../RailroadsServer/RailsGraph.cpp ../RailroadsServer/trainposindicator.cpp ../RailroadsServer/setupdialog.cpp ../RailroadsServer/global.cpp ../RailroadsServer/Queue.cpp ../RailroadsServer/StringQueue.cpp ../RailroadsServer/Server.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../RailroadsServer/setupdialog.ui $(DISTDIR)/
 
 
@@ -1507,11 +1519,150 @@ setupdialog.o: ../RailroadsServer/setupdialog.cpp ../RailroadsServer/setupdialog
 		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qlayout.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qgridlayout.h \
 		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QWidget \
-		../RailroadsServer/global.h
+		../RailroadsServer/global.h \
+		../RailroadsServer/RailsGraph.h \
+		../RailroadsServer/rail.h \
+		../RailroadsServer/RailroadsViewer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QMainWindow \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qmainwindow.h \
+		../RailroadsServer/RailroadsCanvas.h \
+		../RailroadsServer/QSFMLCanvas.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtimer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbasictimer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QFrame \
+		../RailroadsServer/trainposindicator.h \
+		../RailroadsServer/Server.h \
+		../RailroadsServer/StringQueue.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o setupdialog.o ../RailroadsServer/setupdialog.cpp
 
-global.o: ../RailroadsServer/global.cpp ../RailroadsServer/global.h
+global.o: ../RailroadsServer/global.cpp ../RailroadsServer/global.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qwidget.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtguiglobal.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qglobal.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qconfig.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtcore-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsystemdetection.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qprocessordetection.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcompilerdetection.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtypeinfo.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsysinfo.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qlogging.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qflags.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtypetraits.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbasicatomic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qgenericatomic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic_cxx11.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qatomic_msvc.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qglobalstatic.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmutex.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qnumeric.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qversiontagging.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtgui-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qwindowdefs.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobjectdefs.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qnamespace.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qwindowdefs_win.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobject.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstring.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qchar.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbytearray.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qrefcount.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qarraydata.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstringbuilder.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qlist.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qalgorithms.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qiterator.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qhashfunctions.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qpair.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbytearraylist.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstringlist.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qregexp.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qstringmatcher.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcoreevent.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qscopedpointer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmetatype.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvarlengtharray.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcontainerfwd.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qobject_impl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmargins.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpaintdevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qrect.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsize.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qpoint.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpalette.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qcolor.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qrgb.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qrgba64.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qbrush.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvector.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qmatrix.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpolygon.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qregion.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qdatastream.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qiodevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qline.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtransform.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpainterpath.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qimage.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpixelformat.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qpixmap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsharedpointer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qshareddata.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qhash.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfont.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfontmetrics.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qfontinfo.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qsizepolicy.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qcursor.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qkeysequence.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qevent.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qvariant.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qmap.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qdebug.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtextstream.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qlocale.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qset.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qcontiguouscache.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qurl.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qurlquery.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qfile.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qfiledevice.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qvector2d.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qtouchdevice.h \
+		../RailroadsServer/RailsGraph.h \
+		../RailroadsServer/rail.h \
+		../RailroadsServer/RailroadsViewer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QMainWindow \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qmainwindow.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qtabwidget.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtGui/qicon.h \
+		../RailroadsServer/RailroadsCanvas.h \
+		../RailroadsServer/QSFMLCanvas.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qtimer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtCore/qbasictimer.h \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/QFrame \
+		/home/pentalpha/qt/5.8/gcc_64/include/QtWidgets/qframe.h \
+		../RailroadsServer/trainposindicator.h \
+		../RailroadsServer/Server.h \
+		../RailroadsServer/StringQueue.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o global.o ../RailroadsServer/global.cpp
+
+Queue.o: ../RailroadsServer/Queue.cpp ../RailroadsServer/Queue.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Queue.o ../RailroadsServer/Queue.cpp
+
+StringQueue.o: ../RailroadsServer/StringQueue.cpp ../RailroadsServer/StringQueue.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o StringQueue.o ../RailroadsServer/StringQueue.cpp
+
+Server.o: ../RailroadsServer/Server.cpp ../RailroadsServer/Server.h \
+		../RailroadsServer/StringQueue.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Server.o ../RailroadsServer/Server.cpp
 
 moc_RailroadsViewer.o: moc_RailroadsViewer.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RailroadsViewer.o moc_RailroadsViewer.cpp
