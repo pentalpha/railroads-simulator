@@ -12,7 +12,7 @@
 #include "StringQueue.h"
 #include <string>
 #include <thread>
-#include "global.h"
+#include "logging.h"
 
 #define MAXMSG 1024
 #define PORTNUM 50001

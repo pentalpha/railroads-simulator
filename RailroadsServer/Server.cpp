@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "logging.h"
 
 Server::Server(const char* localIP, int port){
   this->localIP = string(localIP);
@@ -44,7 +45,7 @@ bool Server::getSocket(){
   //Verificar erros
   if (socketId == -1)
   {
-      Global::log("SERVER", "Failed to create socket()");
+      log("SERVER", "Failed to create socket()");
       return false;
   }
   return true;
@@ -54,7 +55,7 @@ bool Server::doBind(){
   //Conectando o socket a uma porta. Executado apenas no lado servidor
   if (bind (socketId, (struct sockaddr *)&address, sizeof(struct sockaddr)) == -1)
   {
-    Global::log("SERVER", string("Failed to bind() a port (") + to_string(port));
+    log("SERVER", string("Failed to bind() a port (") + to_string(port));
     return false;
   }else{
     return true;
@@ -65,7 +66,7 @@ bool Server::startListening(){
   //Habilitando o servidor a receber conexoes do cliente
   if (listen( socketId, 10 ) == -1)
   {
-      Global::log("SERVER", string("Failed to listen() on ") + localIP + string("::") + to_string(port));
+      log("SERVER", string("Failed to listen() on ") + localIP + string("::") + to_string(port));
       return false;
   }else{
       return true;
@@ -109,16 +110,16 @@ bool Server::isWaiting(){
 void Server::waitForClientAndReceive(){
   waitingFlag = true;
   //Servidor fica bloqueado esperando uma conexão do cliente
-  Global::log("SERVER", "Waiting for client...");
+  log("SERVER", "Waiting for client...");
   connectionClientId = accept( socketId,(struct sockaddr *) &addressClient,&sizeAddressClient );
 
-  Global::log("SERVER", string("Client connected: ") + string(inet_ntoa(addressClient.sin_addr)));
+  log("SERVER", string("Client connected: ") + string(inet_ntoa(addressClient.sin_addr)));
   waitingFlag = false;
   connected = true;
   //Verificando erros
   if ( connectionClientId == -1)
   {
-      Global::log("SERVER", "Failed to accept() a client");
+      log("SERVER", "Failed to accept() a client");
       return;
   }
   std::thread recvThread(&Server::receive, this);
@@ -134,17 +135,17 @@ void Server::receive(){
       bytesread = recv(connectionClientId,msg,MAXMSG,0);
       if (bytesread == -1)
       {
-          Global::log("SERVER", "Message received: \nBroken message | Failed to recv()");
+          log("SERVER", "Message received: \nBroken message | Failed to recv()");
           break;
       }
       else if (bytesread == 0)
       {
-          Global::log("SERVER", "Message received: \nZero bytes, client finished connection");
+          log("SERVER", "Message received: \nZero bytes, client finished connection");
           break;
       }
       //Inserir o caracter de fim de mensagem
       msg[bytesread] = '\0';
-      Global::log("SERVER", string("Message received: \n") + msg);
+      log("SERVER", string("Message received: \n") + msg);
       string *s = new string(msg);
       messages.push(s);
       //close(connectionClientId);
@@ -152,7 +153,7 @@ void Server::receive(){
     waitingFlag = false;
     connected = false;
     close(connectionClientId);
-    Global::log("SERVER", "Connection to client finished, not receiving anymore");
+    log("SERVER", "Connection to client finished, not receiving anymore");
 }
 
 void Server::sendAll(){
@@ -163,20 +164,20 @@ void Server::sendAll(){
             int bytesSent = send(connectionClientId, bytesToSend, MAXMSG, 0);
             if (bytesSent == 0)
             {
-                Global::log("SERVER", "Message sent: \nZero bytes, client finished connection");
+                log("SERVER", "Message sent: \nZero bytes, client finished connection");
                 break;
             }
             else if(bytesSent<0)
             {
-                Global::error("SERVER", "ERROR: send returned an error" + std::to_string(errno));
+                error("SERVER", "ERROR: send returned an error" + std::to_string(errno));
                 //cerr << "ERROR: send returned an error "<<errno<< endl; // this case is triggered
                 //return n;
             }else{
-                Global::log("SERVER", string("Message sent: \n") + string(bytesToSend, MAXMSG));
+                log("SERVER", string("Message sent: \n") + string(bytesToSend, MAXMSG));
             }
             delete toSend;
             delete bytesToSend;
         }
     }
-    Global::log("SERVER", "Connection to client finished, not sending anymore");
+    log("SERVER", "Connection to client finished, not sending anymore");
 }

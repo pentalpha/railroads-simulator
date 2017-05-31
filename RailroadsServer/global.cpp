@@ -2,8 +2,7 @@
 
 RailsGraph* Global::graph = NULL;
 RailroadsViewer* Global::viewer = NULL;
-Server* Global::server = NULL;
-std::mutex Global::m;
+RailroadsServer* Global::server = NULL;
 
 Global::Global()
 {
@@ -20,18 +19,5 @@ void Global::startServer(QWidget* parent, int port, string ip, string graphPath)
     viewer = new RailroadsViewer(zoom, padding, graph, true, parent);
     viewer->show();
     log("STARTUP", "Startint server...");
-    server = new Server(ip.c_str(), port);
-    server->start();
-}
-
-void Global::log(std::string origin, std::string message){
-    m.lock();
-    std::cout << "[" << origin << "] " << message << std::endl;
-    m.unlock();
-}
-
-void Global::error(std::string origin, std::string message){
-    m.lock();
-    std::cerr << "[" << origin << "] " << message << std::endl;
-    m.unlock();
+    server = new RailroadsServer(ip.c_str(), port);
 }

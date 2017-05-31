@@ -12,10 +12,7 @@ RailroadsViewer::RailroadsViewer(int size, int padding, RailsGraph* graph, bool 
                (RailroadsCanvas::gridBase*size)*RailroadsCanvas::gridHeigth + padding*2);
     this->resize(qsize.width(), qsize.height());
 
-
-
     this->graph = graph;
-    graph->printAdj();
 
     canvas = new RailroadsCanvas(this, size, padding, graph);
     canvas->show();

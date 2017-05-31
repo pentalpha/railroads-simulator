@@ -21,7 +21,9 @@ SOURCES += main.cpp \
     global.cpp \
     Queue.cpp \
     StringQueue.cpp \
-    Server.cpp
+    Server.cpp \
+    RailroadsServer.cpp \
+    logging.cpp
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -47,7 +49,9 @@ HEADERS += \
     global.h \
     Queue.h \
     StringQueue.h \
-    Server.h
+    Server.h \
+    RailroadsServer.h \
+    logging.h
 
 ### TO ALLOW QSFMLCanvas ###
 INCLUDEPATH += /usr/include/SFML
