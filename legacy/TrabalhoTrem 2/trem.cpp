@@ -1,4 +1,5 @@
 #include "trem.h"
+#include <iostream>
 
 Trem::Trem(int id, int x, int y, int iniX, int iniY, int fimX, int fimY)
 {
@@ -9,7 +10,7 @@ Trem::Trem(int id, int x, int y, int iniX, int iniY, int fimX, int fimY)
     this->iniY = iniY;
     this->fimX = fimX;
     this->fimY = fimY;
-    velocidade = 250;
+    velocidade = 10;
     enable = true;
 }
 
@@ -36,30 +37,28 @@ void Trem::start()
 void Trem::run()
 {
     while(true){
-        switch(id){
-        case 1:
-            if (enable)
-            {
-                emit updateGUI(id,x,y);
-                if (y == iniY - ladoQuadrado/2 && x < fimX-ladoQuadrado/2)
-                    x+=velocidade;
-                else if (x >= fimX - ladoQuadrado/2 && y < fimY - ladoQuadrado/2){
-                    y+=velocidade;
-                    x = fimX;
-                }
-                else if (x > iniX - ladoQuadrado/2 && y == fimY - ladoQuadrado/2)
-                    x-=velocidade;
-                else
-                    y-=velocidade;
+        std::cout << "oi\n";
+        if (enable)
+        {
+            if (y <= iniY - ladoQuadrado/2 && x < fimX-ladoQuadrado/2){
+                x += velocidade;
+                y = iniY - ladoQuadrado/2;
             }
-            break;
-        case 2:
-            //emit updateGUI(id, x,y);
-            break;
-        default:
-            break;
+            else if (x >= fimX - ladoQuadrado/2 && y < fimY - ladoQuadrado/2){
+                y += velocidade;
+                x = fimX - ladoQuadrado/2;
+            }
+            else if (y >= fimY - ladoQuadrado/2 && x > iniX - ladoQuadrado/2){
+                x -= velocidade;
+                y = fimY - ladoQuadrado/2;
+            }
+            else if(x >= iniX - ladoQuadrado/2 && y > iniY - ladoQuadrado/2){
+                y -= velocidade;
+                x = iniX-ladoQuadrado/2;
+            }
+            emit updateGUI(id,x,y);
         }
-        this_thread::sleep_for(chrono::milliseconds(velocidade));
+        this_thread::sleep_for(chrono::milliseconds(100));
     }
 }
 

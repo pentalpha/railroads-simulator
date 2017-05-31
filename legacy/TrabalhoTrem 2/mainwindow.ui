@@ -190,7 +190,7 @@
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="labelTrem05">
+   <widget class="QLabel" name="labelTrem06">
     <property name="geometry">
      <rect>
       <x>220</x>
@@ -206,7 +206,7 @@
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="labelTrem06">
+   <widget class="QLabel" name="labelTrem05">
     <property name="geometry">
      <rect>
       <x>200</x>
