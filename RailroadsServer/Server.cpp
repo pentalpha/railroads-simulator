@@ -154,24 +154,39 @@ void Server::receive(){
     while(!exitFlag){
       //receber uma msg do cliente
       //std::cout << "Server waiting for a message...\n";
-      bytesread = recv(connectionClientId,msg,MAXMSG,0);
-      if (bytesread == -1)
-      {
-          log("SERVER", "Message received: \nBroken message | Failed to recv()");
-          break;
+      std::string msgBuilder = "";
+      char* bytesread;
+      bool messageBuilt = false;
+      int nRead = 0;
+      while(true){
+          nRead = recv(connectionClientId,bytesread,1,0);
+          if (nRead == -1)
+          {
+              log("SERVER", "Message received: \nBroken message | Failed to recv() (=-1)");
+              break;
+          }
+          else if (nRead == 0)
+          {
+              log("SERVER", "Message received: \nZero bytes, client finished connection");
+              break;
+          }else{
+              std::string charStr = std::string(bytesread, nRead);
+              msgBuilder += charStr;
+              if(charStr == "\0"){
+                  messageBuilt = true;
+                  break;
+              }
+          }
       }
-      else if (bytesread == 0)
-      {
-          log("SERVER", "Message received: \nZero bytes, client finished connection");
-          break;
+      if(messageBuilt){
+          log("SERVER", std::string("Message received: \n") + msg);
+          std::string *s = new std::string(msg);
+          messages.push(s);
+      }else{
+          exitFlag = true;
       }
-      //Inserir o caracter de fim de mensagem
-      msg[bytesread] = '\0';
-      log("SERVER", std::string("Message received: \n") + msg);
-      std::string *s = new std::string(msg);
-      messages.push(s);
-      //close(connectionClientId);
     }
+
     waitingFlag = false;
     connected = false;
     close(connectionClientId);
