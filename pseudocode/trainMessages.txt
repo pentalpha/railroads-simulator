@@ -4,23 +4,34 @@ function WaitToStartOnRail():
 		rail to start = RAILX
 	ELSE:
 		abort
+
 	Set position to POS 0 of RAILX
-	While not reached the end of the track:
-		Advance train by speed
+	If(negative track):
+		Set position to POS length(RAILX) of RAILX
+	else:
+		Set position to POS 0 of RAILX
+	While not reached the end (or start) of the track:
+		Advance train by speed (or decrease, on negative track)
 		Send message with position updated to server:
 			"POS ID RAILX X"
 				X = the new position
 	Send message signaling that the train has reached the end of the track:
-		"POS ID RAILX MAX"
+		If(on negative track):
+			"POS ID RAILX MIN"
+		else:
+			"POS ID RAILX MAX"
 	WaitToStartOnRail()
 
-
 Train sends to the server a message to register itself:
-	"REG ID RAIL1 RAIL2 RAIL3 RAIL4"
+	"REG ID -RAIL1 RAIL2 -RAIL3 RAIL4"
 	ID = The train ID, any string
 	RAIL1, RAIL2... = Sequence of rail tracks, the path for the train to follow.
-	(all of the elements in the path must exist on the server, and they must form a closed cycle)
+	(all of the elements in the path must exist on the server, and they must form
+	a closed cycle)
 	Standart: The train starts on the first rail tracks in the list.
+	(The default direction for a train to travel a rail track is from left to right
+	or top to bottom, if its the contrary, the track name must have a '-' before.
+	In this last case, the train must travel from the maximum position to position 0)
 Train waits for an answer from the server, that can be:
 	"ALLOW ID LENGTH1 LENGTH2 LENGTH3 LENGTH4"
 		LENGTH1, LENGTH2 = The length of the rail tracks.
