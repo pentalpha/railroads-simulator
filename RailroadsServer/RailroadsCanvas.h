@@ -15,7 +15,7 @@ public:
     void OnInit();
     void OnUpdate();
     TrainPosIndicator* addTrain(TrainPosIndicator* trainIndicator);
-    TrainPosIndicator* addTrain(std::string name, float pos);
+    TrainPosIndicator* addTrain(std::string name, float pos, std::string trainID, bool dark = false);
     ~RailroadsCanvas();
 
     const static int gridBase = 10;

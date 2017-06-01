@@ -34,7 +34,7 @@ void RailroadsViewer::testTrainIndicatorsA(){
         if(trainIndicator != NULL){
             trainIndicator->Disown();
         }
-        trainIndicator = canvas->addTrain(rail->name, pos);
+        trainIndicator = canvas->addTrain(rail->name, pos, "Train A", (pos >= length));
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         //std::cout << pos << std::endl;
         if(pos >= length){
@@ -59,7 +59,7 @@ void RailroadsViewer::testTrainIndicatorsB(){
         if(trainIndicator != NULL){
             trainIndicator->Disown();
         }
-        trainIndicator = canvas->addTrain(rail->name, pos);
+        trainIndicator = canvas->addTrain(rail->name, pos, "Train B", (pos >= length));
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         //std::cout << pos << std::endl;
         if(pos >= length){

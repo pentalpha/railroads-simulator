@@ -84,7 +84,7 @@ void RailroadsCanvas::railShapesFromGraph(){
     }
 }
 
-TrainPosIndicator* RailroadsCanvas::addTrain(std::string name, float pos){
+TrainPosIndicator* RailroadsCanvas::addTrain(std::string name, float pos, std::string trainID, bool dark){
     Rail* rail = graph->getRail(name);
     sf::Vector2f railOrigin = this->pointToPos(rail->xStart, rail->yStart);
     sf::Vector2f trainPos;
@@ -97,7 +97,7 @@ TrainPosIndicator* RailroadsCanvas::addTrain(std::string name, float pos){
         trainPos = sf::Vector2f(railOrigin.x + pos, railOrigin.y + pos);
     }
     //std::cout << trainPos.x << " " << trainPos.y << std::endl;
-    TrainPosIndicator* train = new TrainPosIndicator(trainPos);
+    TrainPosIndicator* train = new TrainPosIndicator(trainPos, trainID, dark);
     return addTrain(train);
 }
 
