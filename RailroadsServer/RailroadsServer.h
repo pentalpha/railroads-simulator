@@ -7,6 +7,7 @@ class RailroadsServer : public Server
 {
 public:
     RailroadsServer(std::string ip, int port);
+    void whenConnected();
 };
 
 #endif // RAILROADSSERVER_H

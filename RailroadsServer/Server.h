@@ -14,6 +14,7 @@
 #include <thread>
 #include <mutex>
 #include "logging.h"
+#include <sstream>
 
 #define MAXMSG 1024
 #define PORTNUM 50001
@@ -23,15 +24,15 @@ public:
   Server(const char* localIP, int port=PORTNUM);
 
   bool start();
-  void startWaiting();
+  void startWaiting(std::thread* throwWhenConnectedThread = NULL);
   bool isConnected();
   bool isWaiting();
   void stop();
   std::string getMessage();
-  void putMessage(std::string msgToSend);
+  int putMessage(std::string msgToSend);
 
 private:
-  void waitForClientAndReceive();
+  void waitForClientAndReceive(std::thread* throwWhenConnectedThread = NULL);
   bool getSocket();
   bool doBind();
   bool startListening();

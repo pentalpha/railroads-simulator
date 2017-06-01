@@ -1,3 +1,8 @@
+Message Rules:
+	Any length;
+	No spaces or tabs (\n or \t)
+	All messages must end with a '\n' char
+
 function RequireIDToStartOnTrack(trackID):
   #TODO
   #this part uses the semaphores

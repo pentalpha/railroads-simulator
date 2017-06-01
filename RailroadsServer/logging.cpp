@@ -10,7 +10,7 @@ void log(std::string origin, std::string message){
 
 void error(std::string origin, std::string message){
     loggingMutex.lock();
-    std::cerr << "[" << origin << "] " << message << std::endl;
+    std::cerr << "[" << origin << "-ERROR] " << message << std::endl;
     loggingMutex.unlock();
 }
 

@@ -1,6 +1,11 @@
+Message Rules:
+	Any length;
+	No spaces or tabs (\n or \t)
+	All messages must end with a '\n' char
+
 function WaitToStartOnRail():
 	Wait for start message from the server
-	IF(start message = "GOTO ID RAILX"):
+	IF(start message = "GOTO_ID_RAILX\n"):
 		rail to start = RAILX
 	ELSE:
 		abort
@@ -13,17 +18,17 @@ function WaitToStartOnRail():
 	While not reached the end (or start) of the track:
 		Advance train by speed (or decrease, on negative track)
 		Send message with position updated to server:
-			"POS ID RAILX X"
+			"POS_ID_RAILX_X\n"
 				X = the new position
 	Send message signaling that the train has reached the end of the track:
 		If(on negative track):
-			"POS ID RAILX MIN"
+			"POS_ID_RAILX_MIN\n"
 		else:
-			"POS ID RAILX MAX"
+			"POS_ID_RAILX_MAX\n"
 	WaitToStartOnRail()
 
 Train sends to the server a message to register itself:
-	"REG ID -RAIL1 RAIL2 -RAIL3 RAIL4"
+	"REG_ID_-RAIL1_RAIL2_-RAIL3_RAIL4\n"
 	ID = The train ID, any string
 	RAIL1, RAIL2... = Sequence of rail tracks, the path for the train to follow.
 	(all of the elements in the path must exist on the server, and they must form
@@ -33,9 +38,9 @@ Train sends to the server a message to register itself:
 	or top to bottom, if its the contrary, the track name must have a '-' before.
 	In this last case, the train must travel from the maximum position to position 0)
 Train waits for an answer from the server, that can be:
-	"ALLOW ID LENGTH1 LENGTH2 LENGTH3 LENGTH4"
+	"ALLOW_ID_LENGTH1_LENGTH2_LENGTH3_LENGTH4\n"
 		LENGTH1, LENGTH2 = The length of the rail tracks.
 		Now, the train can start waiting for the message to start.
-	"DENY ID"
+	"DENY_ID\n"
 		No deal, exit
 WaitToStartOnRail()

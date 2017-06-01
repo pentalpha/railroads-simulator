@@ -16,7 +16,7 @@ Server::Server(const char* localIP, int port){
   address.sin_addr.s_addr = inet_addr(localIP);
   connected = false;
   exitFlag = false;
-  waitingFlag =false;
+  waitingFlag = false;
 }
 
 bool Server::start(){
@@ -77,7 +77,10 @@ bool Server::isConnected(){
   return connected;
 }
 
-void Server::putMessage(std::string msgToSend){
+int Server::putMessage(std::string msgToSend){
+    if(!connected){
+        return 0;
+    }
     //std::string* bytes = new std::string(msgToSend.c_str());
     //sendQueue.push(bytes);
     m.lock();
@@ -86,13 +89,13 @@ void Server::putMessage(std::string msgToSend){
     if (bytesSent == 0)
     {
         log("SERVER", "Message sent: \nZero bytes, client finished connection");
-        return;
+        return bytesSent;
     }
     else if(bytesSent<0)
     {
         error("SERVER", "ERROR: send returned an error" + std::to_string(errno));
         //cerr << "ERROR: send returned an error "<<errno<< endl; // this case is triggered
-        return;
+        return bytesSent;
     }else if (bytesSent < strlen(bytesToSend)){
         log("SERVER", std::string("Message sent with less characters: \n") + std::string(bytesToSend, bytesSent));
     }else if (bytesSent > strlen(bytesToSend)){
@@ -102,6 +105,7 @@ void Server::putMessage(std::string msgToSend){
         log("SERVER", std::string("Message sent: \n") + std::string(bytesToSend));
     }
     m.unlock();
+    return bytesSent;
 }
 
 std::string Server::getMessage(){
@@ -113,10 +117,10 @@ std::string Server::getMessage(){
   }
 }
 
-void Server::startWaiting(){
+void Server::startWaiting(std::thread* toThrow){
   exitFlag = false;
   waitingFlag = true;
-  std::thread theThread = std::thread(&Server::waitForClientAndReceive, this);
+  std::thread theThread = std::thread(&Server::waitForClientAndReceive, this, toThrow);
   theThread.detach();
 }
 
@@ -129,7 +133,7 @@ bool Server::isWaiting(){
   return waitingFlag;
 }
 
-void Server::waitForClientAndReceive(){
+void Server::waitForClientAndReceive(std::thread* toThrow){
   waitingFlag = true;
   //Servidor fica bloqueado esperando uma conexão do cliente
   log("SERVER", "Waiting for client...");
@@ -144,47 +148,63 @@ void Server::waitForClientAndReceive(){
       log("SERVER", "Failed to accept() a client");
       return;
   }
+  if(toThrow != NULL){
+      toThrow->detach();
+  }
   std::thread recvThread(&Server::receive, this);
-  //std::thread sendThread(&Server::sendAll, this);
   recvThread.detach();
-  //sendThread.detach();
 }
 
 void Server::receive(){
+    int nBytes = 8;
+    //receber uma msg do cliente
+    //std::cout << "Server waiting for a message...\n";
+    std::stringstream* msgBuilder = new std::stringstream();
+    char* bytesread = new char[nBytes];
+    int nRead = 0;
+    log("SERVER", std::string("Client id: ") + std::to_string(connectionClientId));
+    int bufferingChars = 0;
     while(!exitFlag){
-      //receber uma msg do cliente
-      //std::cout << "Server waiting for a message...\n";
-      std::string msgBuilder = "";
-      char* bytesread;
-      bool messageBuilt = false;
-      int nRead = 0;
-      while(true){
-          nRead = recv(connectionClientId,bytesread,1,0);
-          if (nRead == -1)
+          //memset (bytesread,(char)0,nBytes);
+          nRead = recv(connectionClientId,bytesread,nBytes,0);
+          if (nRead > 0)
           {
-              log("SERVER", "Message received: \nBroken message | Failed to recv() (=-1)");
-              break;
+              //log("SERVER", std::string("bytesread == ") + std::string(bytesread, nRead));
+              for(int i = 0; i < nBytes; i++)
+              {
+                  //log("SERVER", std::string("msgBuilder << ") + std::to_string((int)bytesread[i]));
+                  *msgBuilder << bytesread[i];
+                  if((int)bytesread[i] == 10 && bufferingChars){
+                      std::string msg;
+                      *msgBuilder >> msg;
+                      log("SERVER", std::string("Message received: \n") + msg);
+                      std::string *s = new std::string(msg);
+                      messages.push(s);
+                      msgBuilder =  new std::stringstream();
+                      bufferingChars = 0;
+                  }else{
+                      bufferingChars++;
+                  }
+              }
           }
           else if (nRead == 0)
           {
+              //std::cout << "recv() == 0" << std::endl;
               log("SERVER", "Message received: \nZero bytes, client finished connection");
-              break;
-          }else{
-              std::string charStr = std::string(bytesread, nRead);
-              msgBuilder += charStr;
-              if(charStr == "\0"){
-                  messageBuilt = true;
-                  break;
-              }
+              exitFlag = true;
           }
-      }
-      if(messageBuilt){
-          log("SERVER", std::string("Message received: \n") + msg);
-          std::string *s = new std::string(msg);
-          messages.push(s);
-      }else{
-          exitFlag = true;
-      }
+          else
+          {
+              if(nRead == -1){
+                  log("SERVER", "Message received: \nBroken message | Failed to recv() (=-1)");
+                  error("SERVER", std::to_string(errno));
+              }else{
+                  log("SERVER", std::string("Message received: \nBroken message | Failed to receive\n recv() =")
+                      + std::to_string(nRead));
+                  error("SERVER", std::to_string(errno));
+              }
+              exitFlag = true;
+          }
     }
 
     waitingFlag = false;
