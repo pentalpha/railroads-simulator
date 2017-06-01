@@ -156,7 +156,7 @@ void Server::waitForClientAndReceive(std::thread* toThrow){
 }
 
 void Server::receive(){
-    int nBytes = 8;
+    int nBytes = minMessage+1;
     //receber uma msg do cliente
     //std::cout << "Server waiting for a message...\n";
     std::stringstream* msgBuilder = new std::stringstream();

@@ -3,8 +3,9 @@
 #include <iostream>
 #include <string>
 #include <mutex>
+#include <vector>
 
 void log(std::string origin, std::string message);
 void error(std::string origin, std::string message);
-
+std::string vectorToStr(std::vector<std::string> words);
 #endif // LOGGING_H

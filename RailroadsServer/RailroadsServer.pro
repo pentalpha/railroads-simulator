@@ -52,7 +52,7 @@ HEADERS += \
     Server.h \
     RailroadsServer.h \
     logging.h
-
+LIBS += -l boost_system
 ### TO ALLOW QSFMLCanvas ###
 INCLUDEPATH += /usr/include/SFML
 DEPENDPATH += /usr/include/SFML

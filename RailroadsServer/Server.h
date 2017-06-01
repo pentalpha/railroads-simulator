@@ -30,8 +30,8 @@ public:
   void stop();
   std::string getMessage();
   int putMessage(std::string msgToSend);
-
-private:
+  const static int minMessage = 7;
+protected:
   void waitForClientAndReceive(std::thread* throwWhenConnectedThread = NULL);
   bool getSocket();
   bool doBind();

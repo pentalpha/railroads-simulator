@@ -14,3 +14,11 @@ void error(std::string origin, std::string message){
     loggingMutex.unlock();
 }
 
+std::string vectorToStr(std::vector<std::string> words){
+    std::string str = "";
+    for(auto x : words){
+        str += std::string(" ") + x;
+    }
+    return str;
+}
+
