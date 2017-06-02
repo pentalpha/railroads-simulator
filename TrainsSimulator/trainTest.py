@@ -20,7 +20,8 @@ commands.append("REG_ID_-RAIL1_RAIL2_-RAIL3_RAIL4\n");
 commands.append("ALLOW_ID_LENGTH1_LENGTH2_LENGTH3_LENGTH4\n");
 commands.append("DENY_ID\n");
 for cmd in commands:
-    #time.sleep(1)
-    msg = cmd
-    tcp.send(msg.encode())
+	time.sleep(0.2)
+	msg = cmd
+	print("Sending: " + msg)
+	tcp.send(msg.encode())
 tcp.close()

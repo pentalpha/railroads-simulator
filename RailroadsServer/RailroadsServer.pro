@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     Server.cpp \
     RailroadsServer.cpp \
     logging.cpp \
-    events.cpp
+    events.cpp \
+    semaforo.cpp
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -53,8 +54,10 @@ HEADERS += \
     Server.h \
     RailroadsServer.h \
     logging.h \
-    events.h
+    events.h \
+    semaforo.h
 LIBS += -l boost_system
+QMAKE_CXXFLAGS += -pthread -Wl,--no-as-needed -std="c++14" -lpthread
 ### TO ALLOW QSFMLCanvas ###
 INCLUDEPATH += /usr/include/SFML
 DEPENDPATH += /usr/include/SFML

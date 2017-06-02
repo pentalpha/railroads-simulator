@@ -12,7 +12,7 @@ sf::Font TrainPosIndicator::getDroidSans(){
     return font;
 }
 
-TrainPosIndicator::TrainPosIndicator(sf::Vector2f pos, std::string name, bool dark)
+TrainPosIndicator::TrainPosIndicator(sf::Vector2f pos, std::string* name, bool dark)
 {
     orphaned = false;
     dead = false;
@@ -23,7 +23,7 @@ TrainPosIndicator::TrainPosIndicator(sf::Vector2f pos, std::string name, bool da
         shape.setFillColor(darkColor);
     }
     trainName.setFont(droidSans);
-    trainName.setString(name);
+    trainName.setString(*name);
     trainName.setColor(sf::Color::Black);
     trainName.setStyle(sf::Text::Bold);
     trainName.setCharacterSize(14);

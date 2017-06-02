@@ -1,4 +1,5 @@
 #include "RailroadsServer.h"
+#include "semaforo.h"
 
 using namespace std;
 
@@ -30,7 +31,7 @@ void RailroadsServer::whenConnected(){
 }
 
 void RailroadsServer::treatMessage(std::string message){
-    //log("SERVER", std::string("Treating '") + message + std::string("'"));
+    log("SERVER", std::string("Treating '") + message + std::string("'"));
     //int posPOS = message.find_first_of("POS");
     std::vector<std::string> words;
     boost::split(words, message, boost::is_any_of("_"));
@@ -61,8 +62,9 @@ void RailroadsServer::POS(std::vector<std::string> words){
     log("SERVER-POS", vectorToStr(words));
     string id = words[0];
     words.erase(words.begin());
-    if(Events::registeredTrains.count(id) >= 1){
-        Events::getQueue(id)->push(new string(words[1].c_str()));
+    StringQueue* q = Events::getQueue(id);
+    if(q != NULL){
+        q->push(new string(words[1].c_str()));
     }
 }
 
@@ -113,9 +115,9 @@ vector<string> RailroadsServer::pathWithoutNegativeSign(vector<string> path, vec
     return noNegative;
 }
 
-bool RailroadsServer::allRailsInGraph(vector<string> rails){
-    for(auto p : rails){
-        if (graph->rails.find(p) == graph->rails.end()){
+bool RailroadsServer::allRailsInGraph(vector<string> vec){
+    for(string p : vec){
+        if (graph->railInGraph(p) == false){
             return false;
         }
     }
@@ -155,6 +157,7 @@ bool RailroadsServer::registerNewTrain(string id, vector<string> path){
 void RailroadsServer::trainThread(string id, StringQueue* trainQueue, vector<string> path,
                                   vector<bool> negative, vector<int> lengths){
     int actualRail = 0;
+    TrainPosIndicator* indicator = NULL;
     while(!exitFlag){
         if(actualRail == path.size()){
             actualRail = 0;
@@ -182,7 +185,10 @@ void RailroadsServer::trainThread(string id, StringQueue* trainQueue, vector<str
                     }
                 }
                 if(pos != -1){
-                    canvas->addTrain(path[actualRail], pos, id, maximal);
+                    if(indicator != NULL) {
+                        indicator->Disown();
+                    }
+                    indicator = canvas->addTrain(path[actualRail], pos, id, maximal);
                 }
             }
             if(maximal){
@@ -208,11 +214,15 @@ void RailroadsServer::trainThread(string id, StringQueue* trainQueue, vector<str
  */
 
 void RailroadsServer::reserveRail(string rail){
-
+    log("SERVER", string("Trying to enter critical region ") + rail);
+    graph->semaphores[rail]->P();
+    log("SERVER", string("Entered critical region ") + rail);
 }
 
 void RailroadsServer::releaseRail(string rail){
-
+    log("SERVER", string("Trying to exit critical region ") + rail);
+    graph->semaphores[rail]->V();
+    log("SERVER", string("Exited critical region ") + rail);
 }
 
 

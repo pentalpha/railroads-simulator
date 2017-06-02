@@ -11,7 +11,7 @@ Parametros:
  */
 Semaforo::Semaforo(key_t key, int valorInicial, int flags){
   //Alocando apenas 1 semaforo
-  semaforoId = semget(key,1,IPC_CREAT|0600);
+  semaforoId = semget(key,1,flags);
   //Verificando erros
   if (semaforoId == -1){
     perror("Error ao criar semaforo\n");

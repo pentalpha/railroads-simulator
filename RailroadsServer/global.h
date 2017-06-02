@@ -12,6 +12,7 @@
 #include "logging.h"
 #include "StringQueue.h"
 #include <set>
+#include <chrono>
 
 using namespace std;
 
@@ -20,7 +21,7 @@ class Global
 public:
     Global();
     static void startServer(QWidget* parent, int port, string ip, string graphPath);
-
+    static void destroyAll();
     static RailsGraph* graph;
     static RailroadsViewer* viewer;
     static RailroadsServer* server;

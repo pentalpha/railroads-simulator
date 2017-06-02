@@ -74,7 +74,7 @@ bool Server::startListening(){
 }
 
 bool Server::isConnected(){
-  return connected;
+  return connected || !exitFlag;
 }
 
 int Server::putMessage(std::string msgToSend){

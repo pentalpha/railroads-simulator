@@ -6,58 +6,39 @@
 #include <map>
 #include <vector>
 #include "rail.h"
+#include "semaforo.h"
+#include <set>
 
 using namespace std;
 
 class RailsGraph
 {
 public:
+    mutable std::mutex m;
+    mutable std::mutex railSetLock;
+
+    RailsGraph(std::string graphFilePath);
+    ~RailsGraph();
+
+    Rail* getRail(std::string name);
+    std::vector<Rail*> getAdjTo(std::string name);
+    bool isAdj(std::string first, std::string second);
+    bool railInGraph(std::string r);
+    void printAdj();
+
+    std::set<std::string> railSet;
     std::map<std::string, Rail*> rails;
+    std::map<std::string, Semaforo*> semaphores;
+    std::map<std::string, key_t> semaphoreKeyT;
     std::map<std::string, std::vector<Rail*> > adj;
 
 protected:
-    std::mutex m;
+    static int nextKeyT;
+
     static const std::string nodeTag, edgesTag, edgesEndTag;
 
-    inline void addRail(Rail* rail){
-        m.lock();
-        rails[rail->name] = rail;
-        m.unlock();
-    }
-
-    inline void addAdj(std::string name, Rail* rail){
-        if (adj.find(name) == adj.end() ) {
-          adj[name] = std::vector<Rail*>();
-        }
-        adj[name].push_back(rail);
-        std::string nameB = rail->name;
-        Rail* railA = rails[name];
-        if(railA != NULL){
-            adj[nameB].push_back(railA);
-        }
-        //addAdj(rail->name, rails[name]);
-    }
-public:
-    RailsGraph(std::string graphFilePath);
-    ~RailsGraph();
-    inline Rail* getRail(std::string name){
-        return rails[name];
-    }
-
-    inline std::vector<Rail*> getAdjTo(std::string name){
-        return adj[name];
-    }
-
-    inline bool isAdj(std::string first, std::string second){
-        for(Rail* rail : getAdjTo(first)){
-            if(rail->name == second){
-                return true;
-            }
-        }
-        return false;
-    }
-    void printAdj();
-
+    void addRail(Rail* rail);
+    void addAdj(std::string name, Rail* rail);
 };
 
-#endif // RAILSGRAPH_H
+#endif

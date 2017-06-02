@@ -6,7 +6,7 @@
 class TrainPosIndicator
 {
 public:
-    TrainPosIndicator(sf::Vector2f pos, std::string name, bool dark = false);
+    TrainPosIndicator(sf::Vector2f pos, std::string* name, bool dark = false);
     void Draw(sf::RenderWindow* window);
     void Update();
     void Disown();

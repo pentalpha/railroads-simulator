@@ -9,10 +9,14 @@ using namespace std;
 const std::string RailsGraph::nodeTag="[node]";
 const std::string RailsGraph::edgesTag="[edges]";
 const std::string RailsGraph::edgesEndTag="[end-edges]";
+int RailsGraph::nextKeyT = 1;
 
 RailsGraph::~RailsGraph(){
     for(std::pair<string, Rail*> railPair : rails){
         delete railPair.second;
+    }
+    for(std::pair<string, Semaforo*> s : semaphores){
+        delete s.second;
     }
 }
 
@@ -72,6 +76,14 @@ RailsGraph::RailsGraph(std::string graphFilePath)
     }
 }
 
+bool RailsGraph::railInGraph(std::string r){
+    //std::unique_lock<std::mutex> mutexLock(railSetLock);
+    railSetLock.lock();
+    bool res = (railSet.count(r) > 0);
+    railSetLock.unlock();
+    return res;
+}
+
 void RailsGraph::printAdj(){
     for(std::pair<std::string, std::vector<Rail*> > pair : adj){
         std::cout << pair.first << ":";
@@ -80,5 +92,47 @@ void RailsGraph::printAdj(){
         }
         std::cout << std::endl;
     }
+}
+
+void RailsGraph::addRail(Rail* rail){
+    m.lock();
+    semaphores[rail->name] = new Semaforo(nextKeyT, 1, IPC_CREAT|0600);
+    semaphoreKeyT[rail->name] = nextKeyT;
+    railSet.insert(rail->name);
+    nextKeyT++;
+    rails[rail->name] = rail;
+    m.unlock();
+}
+
+
+
+void RailsGraph::addAdj(std::string name, Rail* rail){
+    if (adj.find(name) == adj.end() ) {
+      adj[name] = std::vector<Rail*>();
+    }
+    adj[name].push_back(rail);
+    std::string nameB = rail->name;
+    Rail* railA = rails[name];
+    if(railA != NULL){
+        adj[nameB].push_back(railA);
+    }
+    //addAdj(rail->name, rails[name]);
+}
+
+Rail* RailsGraph::getRail(std::string name){
+    return rails[name];
+}
+
+std::vector<Rail*> RailsGraph::getAdjTo(std::string name){
+    return adj[name];
+}
+
+bool RailsGraph::isAdj(std::string first, std::string second){
+    for(Rail* rail : getAdjTo(first)){
+        if(rail->name == second){
+            return true;
+        }
+    }
+    return false;
 }
 

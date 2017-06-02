@@ -21,3 +21,14 @@ void Global::startServer(QWidget* parent, int port, string ip, string graphPath)
     log("STARTUP", "Startint server...");
     server = new RailroadsServer(ip.c_str(), port, graph, viewer->canvas);
 }
+
+void Global::destroyAll(){
+    if(server->isConnected()){
+        server->stop();
+    }
+    viewer->close();
+    delete viewer;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    delete server;
+    delete graph;
+}

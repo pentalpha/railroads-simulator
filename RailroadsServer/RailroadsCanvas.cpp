@@ -97,7 +97,7 @@ TrainPosIndicator* RailroadsCanvas::addTrain(std::string name, float pos, std::s
         trainPos = sf::Vector2f(railOrigin.x + pos, railOrigin.y + pos);
     }
     //std::cout << trainPos.x << " " << trainPos.y << std::endl;
-    TrainPosIndicator* train = new TrainPosIndicator(trainPos, trainID, dark);
+    TrainPosIndicator* train = new TrainPosIndicator(trainPos, new string(trainID), dark);
     return addTrain(train);
 }
 
