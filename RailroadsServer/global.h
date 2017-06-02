@@ -10,6 +10,8 @@
 #include "RailroadsViewer.h"
 #include "RailroadsServer.h"
 #include "logging.h"
+#include "StringQueue.h"
+#include <set>
 
 using namespace std;
 
@@ -22,6 +24,7 @@ public:
     static RailsGraph* graph;
     static RailroadsViewer* viewer;
     static RailroadsServer* server;
+
 };
 
 #endif // GLOBAL_H

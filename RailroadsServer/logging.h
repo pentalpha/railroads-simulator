@@ -8,4 +8,6 @@
 void log(std::string origin, std::string message);
 void error(std::string origin, std::string message);
 std::string vectorToStr(std::vector<std::string> words);
+std::string vectorToStr(std::vector<int> v);
+
 #endif // LOGGING_H

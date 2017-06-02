@@ -177,7 +177,7 @@ void Server::receive(){
                   if((int)bytesread[i] == 10 && bufferingChars){
                       std::string msg;
                       *msgBuilder >> msg;
-                      log("SERVER", std::string("Message received: \n") + msg);
+                      //log("SERVER", std::string("Message received: \n") + msg);
                       std::string *s = new std::string(msg);
                       messages.push(s);
                       msgBuilder =  new std::stringstream();

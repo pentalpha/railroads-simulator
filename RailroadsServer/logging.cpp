@@ -22,3 +22,17 @@ std::string vectorToStr(std::vector<std::string> words){
     return str;
 }
 
+std::string vectorToStr(std::vector<int> v){
+    std::string str = "";
+    bool first = true;
+    for(int x : v){
+        if(first){
+            first = false;
+        }else{
+            str += std::string("_");
+        }
+        str += std::to_string(x);
+    }
+    return str;
+}
+
