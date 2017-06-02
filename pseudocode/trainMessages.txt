@@ -18,13 +18,13 @@ function WaitToStartOnRail():
 	While not reached the end (or start) of the track:
 		Advance train by speed (or decrease, on negative track)
 		Send message with position updated to server:
-			"POS_ID_RAILX_X\n"
+			"POS_ID_X\n"
 				X = the new position
 	Send message signaling that the train has reached the end of the track:
 		If(on negative track):
-			"POS_ID_RAILX_MIN\n"
+			"POS_ID_MIN\n"
 		else:
-			"POS_ID_RAILX_MAX\n"
+			"POS_ID_MAX\n"
 	WaitToStartOnRail()
 
 Train sends to the server a message to register itself:

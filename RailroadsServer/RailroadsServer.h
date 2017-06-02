@@ -27,7 +27,9 @@ private:
     vector<int> lengthsOfPath(vector<string> path);
     bool registerNewTrain(string id, vector<string> path);
     void trainThread(string id, StringQueue* trainQueue, vector<string> path, vector<bool> negative, vector<int> lengths);
-
+    void sendGoToRailMessage(string id, string rail);
+    void reserveRail(string rail);
+    void releaseRail(string rail);
 
 
     RailsGraph* graph;

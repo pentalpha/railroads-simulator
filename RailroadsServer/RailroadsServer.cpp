@@ -59,6 +59,11 @@ void RailroadsServer::REG(std::vector<std::string> words){
 
 void RailroadsServer::POS(std::vector<std::string> words){
     log("SERVER-POS", vectorToStr(words));
+    string id = words[0];
+    words.erase(words.begin());
+    if(Events::registeredTrains.count(id) >= 1){
+        Events::getQueue(id)->push(new string(words[1].c_str()));
+    }
 }
 
 void RailroadsServer::sendDenyToID(string id){
@@ -71,7 +76,7 @@ void RailroadsServer::sendAllowToID(string id, vector<int> lengths){
     putMessage(string("ALLOW_")+ id + string("_") + vectorToStr(lengths) + string("\n"));
 }
 
-void sendGoToRailMessage(string id, string rail){
+void RailroadsServer::sendGoToRailMessage(string id, string rail){
     string message = "GOTO_";
     message += id;
     message += "_";
@@ -189,12 +194,26 @@ void RailroadsServer::trainThread(string id, StringQueue* trainQueue, vector<str
     }
 }
 
-void reserveRail(string rail){
+/* Estratégia anti deadlock de 3
+ * Antes de requisitar entrar no proximo trilho (T1), verificar:
+ *  O prox dps (T2) dele está ocupado por um trem (A)?
+ *      Não -> Requisitar o proximo (T1)
+ *      Sim -> O prox trilho de A (A1) está ocupado?
+ *          Não -> Requisitar T1
+ *          Sim -> O trem que está em A1 (B) precisa ir para T1?
+ *              Não -> Requisitar T1
+ *              Sim -> Não requisitar, esperar um pouco, checar novamente
+ *
+ * Dados: Disponibilizar, para todos os trems, o caminho dos outros trems e a posição atual.
+ */
+
+void RailroadsServer::reserveRail(string rail){
 
 }
 
-void releaseRail(string rail){
+void RailroadsServer::releaseRail(string rail){
 
 }
+
 
 
