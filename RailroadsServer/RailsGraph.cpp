@@ -21,7 +21,8 @@ RailsGraph::~RailsGraph(){
 }
 
 RailsGraph::RailsGraph(std::string graphFilePath)
-    : m(new QMutex()), railSetLock(new QMutex())
+    : m(QMutex::Recursive), railSetLock(QMutex::Recursive),
+      rails(), adj(), semaphores()
 {
     std::ifstream input(graphFilePath);
     std::string word;
@@ -75,17 +76,19 @@ RailsGraph::RailsGraph(std::string graphFilePath)
             }
         }
     }
+    //finished
+    RailsGraph* graph = this;
+    int i = 0;
 }
 
 bool RailsGraph::railInGraph(std::string r){
-    //std::unique_lock<std::mutex> mutexLock(railSetLock);
-    railSetLock.relock();
+    QMutexLocker locker(&railSetLock);
     bool res = !(railSet.find(r) == railSet.end());
-    railSetLock.unlock();
     return res;
 }
 
 void RailsGraph::printAdj(){
+    QMutexLocker locker(&m);
     for(std::pair<std::string, std::vector<Rail*> > pair : adj){
         std::cout << pair.first << ":";
         for(Rail* rail : pair.second){
@@ -96,18 +99,18 @@ void RailsGraph::printAdj(){
 }
 
 void RailsGraph::addRail(Rail* rail){
-    m.relock();
+    QMutexLocker locker(&m);
     semaphores[rail->name] = new QSemaphore(1);//new Semaforo(nextKeyT, 1, IPC_CREAT|0600);
     semaphoreKeyT[rail->name] = nextKeyT;
     railSet.insert(rail->name);
     nextKeyT++;
     rails[rail->name] = rail;
-    m.unlock();
 }
 
 
 
 void RailsGraph::addAdj(std::string name, Rail* rail){
+    QMutexLocker locker(&m);
     if (adj.find(name) == adj.end() ) {
       adj[name] = std::vector<Rail*>();
     }
@@ -121,14 +124,18 @@ void RailsGraph::addAdj(std::string name, Rail* rail){
 }
 
 Rail* RailsGraph::getRail(std::string name){
-    return rails[name];
+    QMutexLocker locker(&m);
+    Rail* rail = rails[name];
+    return rail;
 }
 
 std::vector<Rail*> RailsGraph::getAdjTo(std::string name){
+    QMutexLocker locker(&m);
     return adj[name];
 }
 
 bool RailsGraph::isAdj(std::string first, std::string second){
+    QMutexLocker locker(&m);
     for(Rail* rail : getAdjTo(first)){
         if(rail->name == second){
             return true;

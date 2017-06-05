@@ -18,10 +18,10 @@ RailroadsViewer::RailroadsViewer(int size, int padding, RailsGraph* graph,
     canvas = new RailroadsCanvas(this, size, padding, graph);
     canvas->show();
     if(test){
-        TrainIndicatorsTest testA("A", 0.02, this);
-        TrainIndicatorsTest testB("A", 0.02, this);
-        testA.start();
-        testB.start();
+        TrainIndicatorsTest *testA = new TrainIndicatorsTest("A", 0.03, this);
+        TrainIndicatorsTest *testB = new TrainIndicatorsTest("B", 0.02, this);
+        testA->start();
+        testB->start();
     }
 }
 

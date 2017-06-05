@@ -1,9 +1,9 @@
 #include "RailroadsServer.h"
-
+#include <thread>
 using namespace std;
 
-RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph, RailroadsCanvas* canvas) :
-    ipStr(ip.c_str()), portNum(port)
+RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph0, RailroadsCanvas* canvas0) :
+    ipStr(ip.c_str()), portNum(port), m()
 {
     tcpServer = new QTcpServer();
     addr = QHostAddress(ipStr);
@@ -12,10 +12,11 @@ RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph, Ra
     exitFlag = false;
     waitingFlag = false;
 
-    canvas = canvas;
-    graph = graph;
+    this->canvas = canvas0;
+    this->graph = graph0;
 
     //connect(tcpServer, &QTcpServer::newConnection, this, &RailroadsServer::whenConnected);
+    connect(tcpServer, &QTcpServer::newConnection, this, &RailroadsServer::newConnection);
 }
 
 bool RailroadsServer::startListening(){
@@ -32,34 +33,76 @@ bool RailroadsServer::startListening(){
   }
 }
 
+void RailroadsServer::newConnection(){
+    this->client = tcpServer->nextPendingConnection();
+    connected = true;
+    exitFlag = false;
+    waitingFlag = false;
+    connect(client, &QTcpSocket::disconnected, this, &RailroadsServer::clientDisconnected);
+    client->startTransaction();
+    log("SERVER", string("Waiting for messages from ") + client->peerAddress().toString().toStdString());
+    QtConcurrent::run(this, &RailroadsServer::receiveFromClient);
+    //std::thread treater(&RailroadsServer::msgTreatmentThread, this);
+    //treater.detach();
+    QtConcurrent::run(this, &RailroadsServer::msgTreatmentThread);
+}
+
+void RailroadsServer::receiveFromClient(){
+    //client->moveToThread();
+    int maxLen = 52;
+    string* line = NULL;
+    char* bytes = new char[maxLen];
+    int nRead;
+    memset(bytes, ' ', maxLen);
+    while(!exitFlag && client != NULL){
+        QMutexLocker locker(&m);
+        bool ready = client->waitForReadyRead(20);
+        if(ready){
+            nRead = client->readLine(bytes, maxLen);
+            locker.unlock();
+            if(nRead > 0){
+                line = new string(bytes);
+                log("SERVER", string("Received ") + *line);
+                messages.push(line);
+            }else if(nRead == -1){
+                log("SERVER", "Received -1");
+                exitFlag = true;
+            }
+            memset(bytes, ' ', maxLen);
+        }
+    }
+    log("SERVER", "Connection to client finished, not receiving anymore");
+}
+
+void RailroadsServer::msgTreatmentThread(){
+    log("SERVER", "RailroadsServer is ON");
+
+    while(!exitFlag || messages.getElements() > 0)
+    {
+        std::string msg = getMessage();
+        if(msg.length() >= minMessage)
+        {
+            treatMessage(msg);
+        }
+        else if (msg.length() >= 2)
+        {
+            log("[SERVER]", std::string("Message is too short, ignore: \n") + msg);
+        }
+    }
+
+    log("SERVER", "RailroadsServer Message Treater is OFF");
+}
+
 void RailroadsServer::start(){
   if(startListening() == false){
     return;
   }
-  int nSeconds = 5;
-  log("SERVER", "Waiting 5s for client to connect...");
+
+  int nSeconds = 10;
+  log("SERVER", "Waiting 10s for client to connect...");
   waitingFlag = true;
   bool connected = tcpServer->waitForNewConnection(nSeconds*1000);
-  client = tcpServer->nextPendingConnection();
-  if(!connected || client == NULL){
-      log("SERVER", "No client connected to the server.");
-      waitingFlag = false;
-      connected = false;
-      exitFlag = true;
-      return;
-  }
-  connect(client, &QTcpSocket::disconnected, this, &RailroadsServer::clientDisconnected);
-  whenConnected();
-}
-
-void RailroadsServer::whenConnected(){
-    connected = true;
-    exitFlag = false;
-    waitingFlag = false;
-    QtConcurrent::run(this, &RailroadsServer::receive);
-    msgTreatmentThread();
-    connected = false;
-    exitFlag = true;
+  log("SERVER", "...Finished Waiting for Client!");
 }
 
 bool RailroadsServer::isConnected(){
@@ -78,7 +121,6 @@ std::string RailroadsServer::getMessage(){
 void RailroadsServer::stop(){
   //std::cout << "Server auto stopping itself\n";
   exitFlag = true;
-  client->close();
   stopAllTrainThreads();
 }
 
@@ -92,39 +134,10 @@ bool RailroadsServer::isWaiting(){
   return waitingFlag;
 }
 
-void RailroadsServer::msgTreatmentThread(){
-    log("SERVER", "RailroadsServer is ON");
-
-    while(!exitFlag){
-        std::string msg = getMessage();
-        if(msg.length() >= minMessage)
-        {
-            treatMessage(msg);
-        }else if (msg.length() >= 2)
-        {
-            log("[SERVER]", std::string("Message is too short, ignore: \n") + msg);
-        }
-    }
-
-    log("SERVER", "RailroadsServer is OFF");
-}
-
 void RailroadsServer::clientDisconnected(){
+    log("SERVER", "Client disconnected");
     exitFlag = true;
     connected = false;
-}
-
-void RailroadsServer::receive(){
-    log("SERVER", "Waiting for messages");
-    //char* receivedData = NULL;
-    string* line = NULL;
-    while(!exitFlag){
-        line = new string(client->readLine().toStdString().c_str());
-        if(line->length() >= 2){
-            messages.push(line);
-        }
-    }
-    log("SERVER", "Connection to client finished, not receiving anymore");
 }
 
 int RailroadsServer::putMessage(std::string msgToSend){
@@ -132,9 +145,11 @@ int RailroadsServer::putMessage(std::string msgToSend){
         return 0;
     }
     int strLen = strlen(msgToSend.c_str());
-    this->m.lock();
+    QMutexLocker locker(&m);
+    //this->m.lock();
     int bytesSent = client->write(msgToSend.c_str(), strLen);
-    m.unlock();
+    //m.unlock();
+    locker.unlock();
     if (bytesSent == 0)
     {
         log("SERVER", "Message sent: \nZero bytes, client finished connection");

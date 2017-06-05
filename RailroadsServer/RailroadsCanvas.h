@@ -25,6 +25,7 @@ public:
     const static int gridWidth = 6;
 
 private:
+    sf::Clock deltaClock;
     QMutex m, indicatorParamsLocker;
     sf::Vector2f inline pointToPos(int x, int y){
         int multi = sizeMultiplier*gridBase;

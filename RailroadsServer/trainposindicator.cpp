@@ -29,6 +29,7 @@ TrainPosIndicator::TrainPosIndicator(sf::Vector2f pos, std::string* name, bool d
     trainName.setCharacterSize(14);
     trainName.setOrigin(trainName.getLocalBounds().width/2, trainName.getLocalBounds().height/2);
     trainName.setPosition(shape.getPosition().x, shape.getPosition().y - radius*2);
+    alpha = 255.0;
 }
 
 void TrainPosIndicator::Draw(sf::RenderWindow* window){
@@ -50,11 +51,13 @@ void TrainPosIndicator::Update(){
     if(!dead){
         if(orphaned){
             sf::Color c = shape.getFillColor();
-            if(c.a <= 10){
+            if(alpha <= 10){
                 c.a = 0;
+                alpha = 0;
                 dead = true;
             }else{
-                shape.setFillColor(sf::Color(c.r, c.g, c.b, c.a - 3));
+                alpha -= 0.05;
+                shape.setFillColor(sf::Color(c.r, c.g, c.b, alpha));
             }
         }
     }

@@ -14,9 +14,6 @@ using namespace std;
 class RailsGraph
 {
 public:
-    QMutexLocker m;
-    QMutexLocker railSetLock;
-
     RailsGraph(std::string graphFilePath);
     ~RailsGraph();
 
@@ -31,14 +28,16 @@ public:
     std::map<std::string, QSemaphore*> semaphores;
     std::map<std::string, key_t> semaphoreKeyT;
     std::map<std::string, std::vector<Rail*> > adj;
-
-protected:
     static int nextKeyT;
 
     static const std::string nodeTag, edgesTag, edgesEndTag;
 
     void addRail(Rail* rail);
     void addAdj(std::string name, Rail* rail);
+    QMutex m;
+    QMutex railSetLock;
+protected:
+
 };
 
 #endif

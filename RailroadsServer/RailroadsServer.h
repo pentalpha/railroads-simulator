@@ -44,7 +44,7 @@ public:
     QTcpSocket* client;
 private:
     RailroadsCanvas* canvas;
-
+    void newConnection();
     void clientDisconnected();
     void receive();
     void msgTreatmentThread();
@@ -59,9 +59,10 @@ private:
     vector<int> lengthsOfPath(vector<string> path);
     std::set<TrainThread*> trainThreads;
     bool registerNewTrain(string id, vector<string> path);
-    void trainThread(string id, StringQueue* trainQueue, vector<string> path, vector<bool> negative, vector<int> lengths);
-    void reserveRail(string rail);
-    void releaseRail(string rail);
+    //void trainThread(string id, StringQueue* trainQueue, vector<string> path, vector<bool> negative, vector<int> lengths);
+   // void reserveRail(string rail);
+    //void releaseRail(string rail);
+    void receiveFromClient();
 
 
     QTcpServer* tcpServer;

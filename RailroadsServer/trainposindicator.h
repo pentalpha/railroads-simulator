@@ -28,6 +28,7 @@ public:
     const static int radius = 8;
     static sf::Font droidSans;
     sf::Text trainName;
+    float alpha;
 };
 
 #endif // TRAINPOSINDICATOR_H

@@ -2,20 +2,26 @@
 
 std::string* StringQueue::pop()
 {
-  localMutex.lock();
+  QMutexLocker locker(&localMutex);
   if (strings.empty())
   {
     return NULL;
   }
   std::string *val = strings.front();
   strings.pop();
-  localMutex.unlock();
+  elements--;
   return val;
 }
 
 void StringQueue::push(std::string* item)
 {
-  localMutex.lock();
+  QMutexLocker locker(&localMutex);
   strings.push(item);
-  localMutex.unlock();
+  elements++;
+}
+
+int StringQueue::getElements(){
+    QMutexLocker locker(&localMutex);
+    int s = elements;
+    return s;
 }

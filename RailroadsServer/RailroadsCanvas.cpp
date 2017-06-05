@@ -11,10 +11,12 @@ RailroadsCanvas::RailroadsCanvas(QWidget* parent, int size, int padding, RailsGr
     this->sizeMultiplier = size;
     std::cout << "Width: " << this->size().width() << std::endl;
     std::cout << "Heigth: " << this->size().height() << std::endl;
+    deltaClock.restart();
 }
 
 void RailroadsCanvas::OnInit(){
     railShapesFromGraph();
+    deltaClock.restart();
 }
 
 
@@ -35,6 +37,7 @@ bool isDead(TrainPosIndicator* train) {
 void RailroadsCanvas::OnUpdate(){
     //UPDATE
     trainShapes.remove_if(isDead);
+    //sf::Time dt = deltaClock.restart();
     indicatorParamsLocker.lock();
     while(indicatorsToMake.size() > 0)
     {
@@ -136,5 +139,6 @@ void RailroadsCanvas::addTrain(TrainPosIndicator* trainIndicator){
     if(oldShape != NULL){
         oldShape->Disown();
     }
+    trainShapes.push_back(trainIndicator);
     actualTrainShapes[trainIndicator->trainName.getString()] = trainIndicator;
 }
