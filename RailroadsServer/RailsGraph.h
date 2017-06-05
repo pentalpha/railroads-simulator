@@ -1,21 +1,21 @@
 #ifndef RAILSGRAPH_H
 #define RAILSGRAPH_H
 #include <string>
-#include <thread>
-#include <mutex>
+#include <QThread>
+#include <QMutexLocker>
+#include <QSemaphore>
 #include <map>
 #include <vector>
 #include "rail.h"
-#include "semaforo.h"
-#include <set>
+#include <QSet>
 
 using namespace std;
 
 class RailsGraph
 {
 public:
-    mutable std::mutex m;
-    mutable std::mutex railSetLock;
+    QMutexLocker m;
+    QMutexLocker railSetLock;
 
     RailsGraph(std::string graphFilePath);
     ~RailsGraph();
@@ -26,9 +26,9 @@ public:
     bool railInGraph(std::string r);
     void printAdj();
 
-    std::set<std::string> railSet;
+    QSet<std::string> railSet;
     std::map<std::string, Rail*> rails;
-    std::map<std::string, Semaforo*> semaphores;
+    std::map<std::string, QSemaphore*> semaphores;
     std::map<std::string, key_t> semaphoreKeyT;
     std::map<std::string, std::vector<Rail*> > adj;
 

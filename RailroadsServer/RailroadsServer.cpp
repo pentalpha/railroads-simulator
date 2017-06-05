@@ -1,40 +1,164 @@
 #include "RailroadsServer.h"
-#include "semaforo.h"
 
 using namespace std;
 
 RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph, RailroadsCanvas* canvas) :
-    Server(ip.c_str(), port)
+    ipStr(localIP), portNum(por)
 {
+    tcpServer = new QTcpServer();
+    addr = QHostAddress(ipStr);
+
+    connected = false;
+    exitFlag = false;
+    waitingFlag = false;
+
     canvas = canvas;
     graph = graph;
-    start();
-    std::thread* throwWhenConnectedThread = new std::thread(&RailroadsServer::whenConnected, this);
-    startWaiting(throwWhenConnectedThread);
+
+    //connect(tcpServer, &QTcpServer::newConnection, this, &RailroadsServer::whenConnected);
+}
+
+bool RailroadsServer::startListening(){
+  //Habilitando o servidor a receber conexoes do cliente
+  bool listened = tcpServer->listen(ipStr, portNum);
+  if (!listened)
+  {
+      log("SERVER", std::string("Failed to listen() on ") + ipStr.toStdString() +
+          std::string("::") + std::to_string(portNum));
+      return false;
+  }else{
+      return true;
+  }
+}
+
+void RailroadsServer::start(){
+  if(startListening() == false){
+    return;
+  }
+  int nSeconds = 5;
+  log("SERVER", "Waiting 5s for client to connect...");
+  waitingFlag = true;
+  bool connected = tcpServer->waitForNewConnection(5000);
+  client = tcpServer->nextPendingConnection();
+  if(!connected || client == NULL){
+      log("SERVER", "No client connected to the server.");
+      waitingFlag = false;
+      connected = false;
+      exitFlag = true;
+      return;
+  }
+  connect(client, &QTcpSocket::disconnected, this, &clientDisconnected);
+  whenConnected();
 }
 
 void RailroadsServer::whenConnected(){
+    connected = true;
+    exitFlag = false;
+    waitingFlag = false;
+    QtConcurrent::run(this, &receive);
+    msgTreatmentThread();
+    connected = false;
+    exitFlag = true;
+}
+
+bool RailroadsServer::isConnected(){
+  return connected || !exitFlag;
+}
+
+std::string RailroadsServer::getMessage(){
+  std::string *msg = messages.pop();
+  if(msg == NULL){
+    return "";
+  }else{
+    return *msg;
+  }
+}
+
+void RailroadsServer::stop(){
+  //std::cout << "Server auto stopping itself\n";
+  exitFlag = true;
+  client->close();
+  stopAllTrainThreads();
+}
+
+void RailroadsServer::stopAllTrainThreads(){
+    for(TrainThread* train : trainThreads){
+        train->stop();
+    }
+}
+
+bool RailroadsServer::isWaiting(){
+  return waitingFlag;
+}
+
+void RailroadsServer::msgTreatmentThread(){
     log("SERVER", "RailroadsServer is ON");
 
     while(!exitFlag){
         std::string msg = getMessage();
-        if(msg.length() >= minMessage){
-            //auto treater = std::thread(&RailroadsServer::treatMessage, this, msg);
-            //treater.detach();
+        if(msg.length() >= minMessage)
+        {
             treatMessage(msg);
-        }else if (msg.length() >= 2){
-            log("[SERVER]", std::string("Message is too short: \n") + msg);
+        }else if (msg.length() >= 2)
+        {
+            log("[SERVER]", std::string("Message is too short, ignore: \n") + msg);
         }
     }
 
     log("SERVER", "RailroadsServer is OFF");
 }
 
+void RailroadsServer::clientDisconnected(){
+    exitFlag = true;
+    connected = false;
+}
+
+void RailroadsServer::receive(){
+    log("SERVER", "Waiting for messages");
+    char* receivedData = NULL;
+    string* line = NULL;
+    while(!exitFlag){
+        receivedData = client->readLine();
+        if(strlen(receivedData) >= minMessage-1){
+            messages.push(new string(receivedData));
+        }
+    }
+    log("SERVER", "Connection to client finished, not receiving anymore");
+}
+
+int RailroadsServer::putMessage(std::string msgToSend){
+    if(!connected){
+        return 0;
+    }
+    int strLen = strlen(msgToSend.c_str());
+    this->m.relock();
+    int bytesSent = client->write(msgToSend.c_str(), strLen);
+    m.unlock();
+    if (bytesSent == 0)
+    {
+        log("SERVER", "Message sent: \nZero bytes, client finished connection");
+        return bytesSent;
+    }
+    else if(bytesSent<0)
+    {
+        error("SERVER", "ERROR: send returned an error " + std::to_string(bytesSent));
+        return bytesSent;
+    }else if (bytesSent < strLen){
+        log("SERVER", std::string("Message sent with less characters: \n") + msgToSend);
+    }else if (bytesSent > strLen){
+        log("SERVER", std::string("Message sent with extra characters: \n")
+            + msgToSend + std::string("+") + std::to_string(bytesSent-strLen));
+    }else{
+        log("SERVER", std::string("Message sent: \n") + msgToSend);
+    }
+    return bytesSent;
+}
+
 void RailroadsServer::treatMessage(std::string message){
     log("SERVER", std::string("Treating '") + message + std::string("'"));
     //int posPOS = message.find_first_of("POS");
     std::vector<std::string> words;
-    boost::split(words, message, boost::is_any_of("_"));
+    boost::split(words, message, boost::is_any_of("_ "));
     if(words.size() > 0){
         std::string first = words[0];
         words.erase(words.begin());
@@ -70,18 +194,18 @@ void RailroadsServer::POS(std::vector<std::string> words){
 
 void RailroadsServer::sendDenyToID(string id){
     log("SERVER", string("DENYING TO ") + id);
-    putMessage(string("DENY_")+id+string("\n"));
+    putMessage(string("DENY ")+id+string("\n"));
 }
 
 void RailroadsServer::sendAllowToID(string id, vector<int> lengths){
     log("SERVER", string("Allowing ") + id);
-    putMessage(string("ALLOW_")+ id + string("_") + vectorToStr(lengths) + string("\n"));
+    putMessage(string("ALLOW ")+ id + string(" ") + vectorToStr(lengths) + string("\n"));
 }
 
 void RailroadsServer::sendGoToRailMessage(string id, string rail){
-    string message = "GOTO_";
+    string message = "GOTO ";
     message += id;
-    message += "_";
+    message += " ";
     message += rail;
     message += "\n";
     log("SERVER", message);
@@ -147,83 +271,11 @@ bool RailroadsServer::registerNewTrain(string id, vector<string> path){
         return false;
     }
     auto lengths = lengthsOfPath(noNegativeSign);
-    auto newTrainThread = thread(&RailroadsServer::trainThread, this, id, q, noNegativeSign,
-                                 negative, lengths);
+    TrainThread* train = new TrainThread(id, q, noNegativeSign, negative,
+                                         lengths, this->graph, this->canvas, this);
     sendAllowToID(id, lengths);
-    newTrainThread.detach();
+    train->start();
+    trainThreads.insert(train);
     return true;
 }
-
-void RailroadsServer::trainThread(string id, StringQueue* trainQueue, vector<string> path,
-                                  vector<bool> negative, vector<int> lengths){
-    int actualRail = 0;
-    TrainPosIndicator* indicator = NULL;
-    while(!exitFlag){
-        if(actualRail == path.size()){
-            actualRail = 0;
-        }
-        reserveRail(path[actualRail]);
-        sendGoToRailMessage(id, path[actualRail]);
-        float pos = -1;
-        bool maximal = false;
-        while(true){
-            string* m = trainQueue->pop();
-            if(m != NULL){
-                pos = -1;
-                maximal = false;
-                try{
-                    pos = std::stoi(*m);
-                }catch(...){
-                    if(*m == "MAX"){
-                        pos = lengths[actualRail];
-                        maximal = true;
-                    }else if(*m == "MIN"){
-                        pos = 0.0;
-                        maximal = true;
-                    }else{
-                        error("SERVER", *m + string(" is no valid position."));
-                    }
-                }
-                if(pos != -1){
-                    if(indicator != NULL) {
-                        indicator->Disown();
-                    }
-                    indicator = canvas->addTrain(path[actualRail], pos, id, maximal);
-                }
-            }
-            if(maximal){
-                break;
-            }
-        }
-        releaseRail(path[actualRail]);
-        actualRail++;
-    }
-}
-
-/* Estratégia anti deadlock de 3
- * Antes de requisitar entrar no proximo trilho (T1), verificar:
- *  O prox dps (T2) dele está ocupado por um trem (A)?
- *      Não -> Requisitar o proximo (T1)
- *      Sim -> O prox trilho de A (A1) está ocupado?
- *          Não -> Requisitar T1
- *          Sim -> O trem que está em A1 (B) precisa ir para T1?
- *              Não -> Requisitar T1
- *              Sim -> Não requisitar, esperar um pouco, checar novamente
- *
- * Dados: Disponibilizar, para todos os trems, o caminho dos outros trems e a posição atual.
- */
-
-void RailroadsServer::reserveRail(string rail){
-    log("SERVER", string("Trying to enter critical region ") + rail);
-    graph->semaphores[rail]->P();
-    log("SERVER", string("Entered critical region ") + rail);
-}
-
-void RailroadsServer::releaseRail(string rail){
-    log("SERVER", string("Trying to exit critical region ") + rail);
-    graph->semaphores[rail]->V();
-    log("SERVER", string("Exited critical region ") + rail);
-}
-
-
 

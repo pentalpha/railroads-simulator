@@ -1,19 +1,18 @@
 #ifndef EVENTS_H
 #define EVENTS_H
 
-#include <mutex>
-#include <thread>
 #include <set>
 #include <map>
 #include <StringQueue.h>
 #include <string>
+#include <QMutexLocker>
 
 class Events {
 public:
     Events(){
     }
 
-    static std::mutex registerQueueLock;
+    static QMutexLocker registerQueueLock;
     static std::map<std::string, StringQueue*> EventQueues;
     static std::set<std::string> registeredTrains;
     static StringQueue* getQueue(std::string key);

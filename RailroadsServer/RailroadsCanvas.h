@@ -5,8 +5,9 @@
 #include "trainposindicator.h"
 #include <iostream>
 #include <list>
-#include <thread>
-#include <mutex>
+#include <QMutexLocker>
+#include <QThread>
+#include <queue>
 
 class RailroadsCanvas : public QSFMLCanvas
 {
@@ -23,7 +24,7 @@ public:
     const static int gridWidth = 6;
 
 private:
-    std::mutex m;
+    QMutexLocker m, indicatorParamsLocker;
     sf::Vector2f inline pointToPos(int x, int y){
         int multi = sizeMultiplier*gridBase;
         sf::Vector2f point(x*multi + padding,
@@ -35,6 +36,8 @@ private:
     RailsGraph* graph;
     std::vector<sf::RectangleShape> railShapes;
     std::list<TrainPosIndicator*> trainShapes;
+    std::queue<TrainPosIndicatorParams> indicatorsToMake;
+    std::map<string, TrainPosIndicator*> actualTrainShapes;
     const static int railShapeThickness = 5.f;
     const static sf::Color railShapeColor;
     int sizeMultiplier, padding;

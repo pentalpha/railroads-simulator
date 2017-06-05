@@ -2,20 +2,20 @@
 
 std::string* StringQueue::pop()
 {
-  std::unique_lock<std::mutex> lock(localMutex);
+  localMutex.relock();
   if (strings.empty())
   {
     return NULL;
   }
   std::string *val = strings.front();
   strings.pop();
-  lock.unlock();
+  localMutex.unlock();
   return val;
 }
 
 void StringQueue::push(std::string* item)
 {
-  std::unique_lock<std::mutex> lock(localMutex);
+  localMutex.relock();
   strings.push(item);
-  lock.unlock();
+  localMutex.unlock();
 }

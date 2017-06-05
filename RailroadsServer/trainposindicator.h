@@ -3,6 +3,13 @@
 #include <SFML/Graphics.hpp>
 #include "logging.h"
 
+struct TrainPosIndicatorParams{
+    std::string name;
+    float pos;
+    std::string trainID;
+    bool dark;
+};
+
 class TrainPosIndicator
 {
 public:

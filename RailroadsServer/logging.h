@@ -1,8 +1,8 @@
 #ifndef LOGGING_H
 #define LOGGING_H
+
 #include <iostream>
 #include <string>
-#include <mutex>
 #include <vector>
 
 void log(std::string origin, std::string message);

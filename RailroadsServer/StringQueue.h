@@ -2,8 +2,8 @@
 #define _STR_CONCURRENT_QUEUE_
 
 #include <queue>
-#include <thread>
-#include <mutex>
+#include <QThread>
+#include <QMutexLocker>
 #include <string>
 
 class StringQueue
@@ -17,7 +17,7 @@ class StringQueue
   StringQueue& operator=(const StringQueue&) = delete; // disable assignment
  private:
   std::queue<std::string*> strings;
-  std::mutex localMutex;
+  QMutexLocker localMutex;
 };
 
 #endif

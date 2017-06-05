@@ -78,8 +78,8 @@ RailsGraph::RailsGraph(std::string graphFilePath)
 
 bool RailsGraph::railInGraph(std::string r){
     //std::unique_lock<std::mutex> mutexLock(railSetLock);
-    railSetLock.lock();
-    bool res = (railSet.count(r) > 0);
+    railSetLock.relock();
+    bool res = (railSet.find() != railSet.end());
     railSetLock.unlock();
     return res;
 }
@@ -95,8 +95,8 @@ void RailsGraph::printAdj(){
 }
 
 void RailsGraph::addRail(Rail* rail){
-    m.lock();
-    semaphores[rail->name] = new Semaforo(nextKeyT, 1, IPC_CREAT|0600);
+    m.relock();
+    semaphores[rail->name] = new QSemaphore(1);//new Semaforo(nextKeyT, 1, IPC_CREAT|0600);
     semaphoreKeyT[rail->name] = nextKeyT;
     railSet.insert(rail->name);
     nextKeyT++;

@@ -1,15 +1,16 @@
 #include "logging.h"
+#include <QMutexLocker>
 
-std::mutex loggingMutex;
+QMutexLocker loggingMutex;
 
 void log(std::string origin, std::string message){
-    loggingMutex.lock();
+    loggingMutex.relock();
     std::cout << "[" << origin << "] " << message << std::endl;
     loggingMutex.unlock();
 }
 
 void error(std::string origin, std::string message){
-    loggingMutex.lock();
+    loggingMutex.relock();
     std::cerr << "[" << origin << "-ERROR] " << message << std::endl;
     loggingMutex.unlock();
 }

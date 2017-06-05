@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -19,13 +19,11 @@ SOURCES += main.cpp \
     trainposindicator.cpp \
     setupdialog.cpp \
     global.cpp \
-    Queue.cpp \
     StringQueue.cpp \
-    Server.cpp \
     RailroadsServer.cpp \
     logging.cpp \
     events.cpp \
-    semaforo.cpp
+    TrainThread.cpp
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -49,13 +47,11 @@ HEADERS += \
     trainposindicator.h \
     setupdialog.h \
     global.h \
-    Queue.h \
     StringQueue.h \
-    Server.h \
     RailroadsServer.h \
     logging.h \
     events.h \
-    semaforo.h
+    TrainThread.h
 LIBS += -l boost_system
 QMAKE_CXXFLAGS += -pthread -Wl,--no-as-needed -std="c++14" -lpthread
 ### TO ALLOW QSFMLCanvas ###

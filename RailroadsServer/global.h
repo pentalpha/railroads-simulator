@@ -4,14 +4,12 @@
 #include <iostream>
 #include <string>
 #include <qwidget.h>
-#include <thread>
-#include <mutex>
 #include "RailsGraph.h"
 #include "RailroadsViewer.h"
 #include "RailroadsServer.h"
 #include "logging.h"
 #include "StringQueue.h"
-#include <set>
+#include <QSet>
 #include <chrono>
 
 using namespace std;

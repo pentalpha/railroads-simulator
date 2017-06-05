@@ -2,6 +2,7 @@
 #define _RailroadsViewer_
 
 #include <QMainWindow>
+#include <QThread>
 #include "RailsGraph.h"
 #include "RailroadsCanvas.h"
 
@@ -16,6 +17,20 @@ public:
     ~RailroadsViewer();
     RailsGraph* graph;
     RailroadsCanvas* canvas;
+};
+
+class TrainIndicatorsTest : public QThread{
+public:
+    TrainIndicatorsTest(string railName , float speed, RailroadsViewer* viewer);
+private:
+    void run();
+
+    Rail* rail;
+    int length;
+    float pos;
+    float speed;
+    TrainPosIndicator* trainIndicator;
+    RailroadsViewer* viewer;
 };
 
 #endif // MAINWINDOW_H

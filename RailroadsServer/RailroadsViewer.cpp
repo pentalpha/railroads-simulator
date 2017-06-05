@@ -2,9 +2,9 @@
 #include "RailroadsCanvas.h"
 #include "RailsGraph.h"
 #include <chrono>
-#include <thread>
 
-RailroadsViewer::RailroadsViewer(int size, int padding, RailsGraph* graph, bool test, QWidget *parent)
+RailroadsViewer::RailroadsViewer(int size, int padding, RailsGraph* graph,
+                                 bool test, QWidget *parent)
     : QMainWindow(parent)
 {
     this->setWindowTitle("Railroads Viewer");
@@ -16,12 +16,28 @@ RailroadsViewer::RailroadsViewer(int size, int padding, RailsGraph* graph, bool 
 
     canvas = new RailroadsCanvas(this, size, padding, graph);
     canvas->show();
-    if(test){
+    /*if(test){
         std::thread testThread(&RailroadsViewer::testTrainIndicatorsA, this);
         testThread.detach();
         std::thread testThreadB(&RailroadsViewer::testTrainIndicatorsB, this);
         testThreadB.detach();
-    }
+    }*/
+}
+
+TrainIndicatorsTest::TrainIndicatorsTest(string railName, float speed,
+                                         RailroadsViewer* viewer)
+    : QThread()
+{
+    this->rail = viewer->graph->getRail(railName);
+    this->length = rail->length;
+    this->pos = 0.0;
+    this->speed = speed;
+    this->trainIndicator = NULL;
+    this->viewer = viewer;
+}
+
+void TrainIndicatorsTest::run(){
+
 }
 
 void RailroadsViewer::testTrainIndicatorsA(){
