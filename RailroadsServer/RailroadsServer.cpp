@@ -3,7 +3,7 @@
 using namespace std;
 
 RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph, RailroadsCanvas* canvas) :
-    ipStr(localIP), portNum(por)
+    ipStr(ip.c_str()), portNum(port)
 {
     tcpServer = new QTcpServer();
     addr = QHostAddress(ipStr);
@@ -20,7 +20,8 @@ RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph, Ra
 
 bool RailroadsServer::startListening(){
   //Habilitando o servidor a receber conexoes do cliente
-  bool listened = tcpServer->listen(ipStr, portNum);
+
+  bool listened = tcpServer->listen(addr, portNum);
   if (!listened)
   {
       log("SERVER", std::string("Failed to listen() on ") + ipStr.toStdString() +
@@ -38,7 +39,7 @@ void RailroadsServer::start(){
   int nSeconds = 5;
   log("SERVER", "Waiting 5s for client to connect...");
   waitingFlag = true;
-  bool connected = tcpServer->waitForNewConnection(5000);
+  bool connected = tcpServer->waitForNewConnection(nSeconds*1000);
   client = tcpServer->nextPendingConnection();
   if(!connected || client == NULL){
       log("SERVER", "No client connected to the server.");
@@ -47,7 +48,7 @@ void RailroadsServer::start(){
       exitFlag = true;
       return;
   }
-  connect(client, &QTcpSocket::disconnected, this, &clientDisconnected);
+  connect(client, &QTcpSocket::disconnected, this, &RailroadsServer::clientDisconnected);
   whenConnected();
 }
 
@@ -55,7 +56,7 @@ void RailroadsServer::whenConnected(){
     connected = true;
     exitFlag = false;
     waitingFlag = false;
-    QtConcurrent::run(this, &receive);
+    QtConcurrent::run(this, &RailroadsServer::receive);
     msgTreatmentThread();
     connected = false;
     exitFlag = true;
@@ -115,12 +116,12 @@ void RailroadsServer::clientDisconnected(){
 
 void RailroadsServer::receive(){
     log("SERVER", "Waiting for messages");
-    char* receivedData = NULL;
+    //char* receivedData = NULL;
     string* line = NULL;
     while(!exitFlag){
-        receivedData = client->readLine();
-        if(strlen(receivedData) >= minMessage-1){
-            messages.push(new string(receivedData));
+        line = new string(client->readLine().toStdString().c_str());
+        if(line->length() >= 2){
+            messages.push(line);
         }
     }
     log("SERVER", "Connection to client finished, not receiving anymore");
@@ -131,7 +132,7 @@ int RailroadsServer::putMessage(std::string msgToSend){
         return 0;
     }
     int strLen = strlen(msgToSend.c_str());
-    this->m.relock();
+    this->m.lock();
     int bytesSent = client->write(msgToSend.c_str(), strLen);
     m.unlock();
     if (bytesSent == 0)

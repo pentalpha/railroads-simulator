@@ -17,7 +17,7 @@ class StringQueue
   StringQueue& operator=(const StringQueue&) = delete; // disable assignment
  private:
   std::queue<std::string*> strings;
-  QMutexLocker localMutex;
+  QMutex localMutex;
 };
 
 #endif

@@ -5,14 +5,14 @@
 #include <map>
 #include <StringQueue.h>
 #include <string>
-#include <QMutexLocker>
+#include <QMutex>
 
 class Events {
 public:
     Events(){
     }
 
-    static QMutexLocker registerQueueLock;
+    static QMutex registerQueueLock;
     static std::map<std::string, StringQueue*> EventQueues;
     static std::set<std::string> registeredTrains;
     static StringQueue* getQueue(std::string key);

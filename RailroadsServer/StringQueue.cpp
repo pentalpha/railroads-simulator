@@ -2,7 +2,7 @@
 
 std::string* StringQueue::pop()
 {
-  localMutex.relock();
+  localMutex.lock();
   if (strings.empty())
   {
     return NULL;
@@ -15,7 +15,7 @@ std::string* StringQueue::pop()
 
 void StringQueue::push(std::string* item)
 {
-  localMutex.relock();
+  localMutex.lock();
   strings.push(item);
   localMutex.unlock();
 }

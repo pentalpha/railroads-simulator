@@ -12,8 +12,6 @@ class RailroadsViewer : public QMainWindow
 
 public:
     RailroadsViewer(int size, int padding, RailsGraph* graph, bool test = false, QWidget *parent = 0);
-    void testTrainIndicatorsA();
-    void testTrainIndicatorsB();
     ~RailroadsViewer();
     RailsGraph* graph;
     RailroadsCanvas* canvas;

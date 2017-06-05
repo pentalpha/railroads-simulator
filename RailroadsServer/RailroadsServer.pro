@@ -52,7 +52,7 @@ HEADERS += \
     logging.h \
     events.h \
     TrainThread.h
-LIBS += -l boost_system
+LIBS += -lboost_system
 QMAKE_CXXFLAGS += -pthread -Wl,--no-as-needed -std="c++14" -lpthread
 ### TO ALLOW QSFMLCanvas ###
 INCLUDEPATH += /usr/include/SFML

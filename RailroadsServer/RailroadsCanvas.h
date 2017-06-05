@@ -15,8 +15,9 @@ public:
     RailroadsCanvas(QWidget* parent, int size, int padding, RailsGraph* graph);
     void OnInit();
     void OnUpdate();
-    TrainPosIndicator* addTrain(TrainPosIndicator* trainIndicator);
-    TrainPosIndicator* addTrain(std::string name, float pos, std::string trainID, bool dark = false);
+    void addTrain(TrainPosIndicator* trainIndicator);
+    void addTrain(TrainPosIndicatorParams indicator);
+    void addTrain(std::string name, float pos, std::string trainID, bool dark);
     ~RailroadsCanvas();
 
     const static int gridBase = 10;
@@ -24,13 +25,14 @@ public:
     const static int gridWidth = 6;
 
 private:
-    QMutexLocker m, indicatorParamsLocker;
+    QMutex m, indicatorParamsLocker;
     sf::Vector2f inline pointToPos(int x, int y){
         int multi = sizeMultiplier*gridBase;
         sf::Vector2f point(x*multi + padding,
                            y*multi + padding);
         return point;
     }
+    void drawGridPoints(float rsize);
     void railShapesFromGraph();
     void removeAllDeadTrains();
     RailsGraph* graph;

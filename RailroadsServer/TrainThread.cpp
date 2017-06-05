@@ -1,4 +1,4 @@
-#include "TrainThread.h"
+#include "RailroadsServer.h"
 
 TrainThread::TrainThread(string id, StringQueue* trainQueue, vector<string> path,
                          vector<bool> negative, vector<int> lengths,
@@ -27,13 +27,13 @@ TrainThread::TrainThread(string id, StringQueue* trainQueue, vector<string> path
 
 void TrainThread::reserveRail(string rail){
     log("SERVER", string("Trying to enter critical region ") + rail);
-    graph->semaphores[rail]->P();
+    graph->semaphores[rail]->acquire();
     log("SERVER", string("Entered critical region ") + rail);
 }
 
 void TrainThread::releaseRail(string rail){
     log("SERVER", string("Trying to exit critical region ") + rail);
-    graph->semaphores[rail]->V();
+    graph->semaphores[rail]->release();
     log("SERVER", string("Exited critical region ") + rail);
 }
 
@@ -76,7 +76,7 @@ void TrainThread::run()
                     }
                 }
                 if(pos != -1){
-                    canvas->addTrain(path[actualRail], pos, id, maximal);
+                    canvas->addTrain(rails[actualRail], pos, name, maximal);
                 }
             }
             if(maximal){

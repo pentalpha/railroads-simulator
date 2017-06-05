@@ -35,7 +35,7 @@ bool isDead(TrainPosIndicator* train) {
 void RailroadsCanvas::OnUpdate(){
     //UPDATE
     trainShapes.remove_if(isDead);
-    indicatorParamsLocker.relock();
+    indicatorParamsLocker.lock();
     while(indicatorsToMake.size() > 0)
     {
         addTrain(indicatorsToMake.front());
@@ -107,12 +107,12 @@ void RailroadsCanvas::addTrain(std::string name, float pos,
     indicator.trainID = trainID;
     indicator.dark = dark;
 
-    indicatorParamsLocker.relock();
+    indicatorParamsLocker.lock();
     indicatorsToMake.push(indicator);
     indicatorParamsLocker.unlock();
 }
 
-TrainPosIndicator* RailroadsCanvas::addTrain(TrainPosIndicatorParams indicator){
+void RailroadsCanvas::addTrain(TrainPosIndicatorParams indicator){
     Rail* rail = graph->getRail(indicator.name);
     sf::Vector2f railOrigin = this->pointToPos(rail->xStart, rail->yStart);
     sf::Vector2f trainPos;
@@ -128,14 +128,13 @@ TrainPosIndicator* RailroadsCanvas::addTrain(TrainPosIndicatorParams indicator){
     TrainPosIndicator* train = new TrainPosIndicator(trainPos,
                                                      new string(indicator.trainID),
                                                      indicator.dark);
-    return addTrain(train);
+    addTrain(train);
 }
 
-TrainPosIndicator* RailroadsCanvas::addTrain(TrainPosIndicator* trainIndicator){
-    TrainPosIndicator* oldShape = actualTrainShapes[trainIndicator->trainName];
+void RailroadsCanvas::addTrain(TrainPosIndicator* trainIndicator){
+    TrainPosIndicator* oldShape = actualTrainShapes[trainIndicator->trainName.getString()];
     if(oldShape != NULL){
         oldShape->Disown();
     }
-    actualTrainShapes[trainIndicator->trainName] = trainIndicator;
-    return trainIndicator;
+    actualTrainShapes[trainIndicator->trainName.getString()] = trainIndicator;
 }

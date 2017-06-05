@@ -15,12 +15,13 @@ RailsGraph::~RailsGraph(){
     for(std::pair<string, Rail*> railPair : rails){
         delete railPair.second;
     }
-    for(std::pair<string, Semaforo*> s : semaphores){
+    for(std::pair<string, QSemaphore*> s : semaphores){
         delete s.second;
     }
 }
 
 RailsGraph::RailsGraph(std::string graphFilePath)
+    : m(new QMutex()), railSetLock(new QMutex())
 {
     std::ifstream input(graphFilePath);
     std::string word;
@@ -79,7 +80,7 @@ RailsGraph::RailsGraph(std::string graphFilePath)
 bool RailsGraph::railInGraph(std::string r){
     //std::unique_lock<std::mutex> mutexLock(railSetLock);
     railSetLock.relock();
-    bool res = (railSet.find() != railSet.end());
+    bool res = !(railSet.find(r) == railSet.end());
     railSetLock.unlock();
     return res;
 }

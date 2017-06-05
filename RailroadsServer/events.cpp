@@ -2,7 +2,7 @@
 
 using namespace std;
 
-std::mutex Events::registerQueueLock;
+QMutex Events::registerQueueLock;
 std::map<std::string, StringQueue*> Events::EventQueues;
 std::set<std::string> Events::registeredTrains;
 
@@ -19,12 +19,12 @@ StringQueue* Events::getQueue(std::string key){
 StringQueue* Events::registerQueue(std::string key){
     if(registeredTrains.count(key) == 0){
         registerQueueLock.lock();
-
+        StringQueue *q = new StringQueue;
         registeredTrains.insert(key);
-        StringQueue* stringQueue = new StringQueue;
-        EventQueues[key] = stringQueue;
-
+        EventQueues[key] = q;
         registerQueueLock.unlock();
-        return stringQueue;
-    }return NULL;
+
+        return q;
+    }
+    return NULL;
 }

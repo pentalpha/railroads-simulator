@@ -1,20 +1,29 @@
 #ifndef RAILROADSSERVER_H
 #define RAILROADSSERVER_H
 
-#include "logging.h"
 #include <future>
 #include <boost/algorithm/string.hpp>
-#include "events.h"
-#include "RailsGraph.h"
-#include "RailroadsCanvas.h"
 #include <QObject>
 #include <chrono>
 #include <QTcpSocket>
 #include <QTcpServer>
-#include <QSet>
+#include <set>
 #include <QtConcurrent/QtConcurrentRun>
-#include <QMutexLocker>
-#include "TrainThread.h"
+#include <QMutex>
+#include <QThread>
+#include <vector>
+#include <string>
+
+#include "rail.h"
+#include "StringQueue.h"
+#include "trainposindicator.h"
+#include "RailroadsCanvas.h"
+#include "RailroadsServer.h"
+#include "events.h"
+#include "RailsGraph.h"
+#include "logging.h"
+
+class TrainThread;
 
 class RailroadsServer : public QObject
 {
@@ -22,12 +31,24 @@ public:
     RailroadsServer(std::string ip, int port, RailsGraph* graph, RailroadsCanvas* canvas);
     void whenConnected();
     void treatMessage(std::string message);
+    bool startListening();
+    bool isConnected();
+    bool isWaiting();
+    string getMessage();
+    int putMessage(std::string msgToSend);
     const static int minMessage = 8;
-    bool start();
+    void start();
+    void stop();
+    void sendGoToRailMessage(string id, string rail);
+
     QTcpSocket* client;
 private:
     RailroadsCanvas* canvas;
 
+    void clientDisconnected();
+    void receive();
+    void msgTreatmentThread();
+    void stopAllTrainThreads();
     void REG(std::vector<std::string> words);
     void POS(std::vector<std::string> words);
     void sendDenyToID(std::string id);
@@ -36,10 +57,9 @@ private:
     vector<string> pathWithoutNegativeSign(vector<string> path, vector<bool> negative);
     bool allRailsInGraph(vector<string> rails);
     vector<int> lengthsOfPath(vector<string> path);
-    QSet<TrainThread*> trainThreads;
+    std::set<TrainThread*> trainThreads;
     bool registerNewTrain(string id, vector<string> path);
     void trainThread(string id, StringQueue* trainQueue, vector<string> path, vector<bool> negative, vector<int> lengths);
-    void sendGoToRailMessage(string id, string rail);
     void reserveRail(string rail);
     void releaseRail(string rail);
 
@@ -55,10 +75,39 @@ private:
     quint16 portNum;
     int port;
     bool connected;
-    QMutexLocker m;
+    QMutex m;
 
     StringQueue messages;
     RailsGraph* graph;
+};
+
+class TrainThread : public QThread
+{
+public:
+    TrainThread(string id, StringQueue* trainQueue, vector<string> path,
+                vector<bool> negative, vector<int> lengths,
+                RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server);
+    int actualRail;
+    string name;
+    TrainPosIndicator* indicator;
+    StringQueue* evtQueue;
+    float pos;
+    bool maximal;
+    void stop();
+    bool updating();
+private:
+    void run();
+    void reserveRail(string rail);
+    void releaseRail(string rail);
+
+    bool exitFlag;
+
+    vector<string> rails;
+    vector<int> railsLength;
+    vector<bool> negative;
+    RailsGraph* graph;
+    RailroadsCanvas* canvas;
+    RailroadsServer* server;
 };
 
 #endif // RAILROADSSERVER_H

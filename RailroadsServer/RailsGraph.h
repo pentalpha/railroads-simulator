@@ -7,7 +7,7 @@
 #include <map>
 #include <vector>
 #include "rail.h"
-#include <QSet>
+#include <set>
 
 using namespace std;
 
@@ -26,7 +26,7 @@ public:
     bool railInGraph(std::string r);
     void printAdj();
 
-    QSet<std::string> railSet;
+    std::set<std::string> railSet;
     std::map<std::string, Rail*> rails;
     std::map<std::string, QSemaphore*> semaphores;
     std::map<std::string, key_t> semaphoreKeyT;
