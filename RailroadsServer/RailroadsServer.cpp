@@ -17,6 +17,7 @@ RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph0, R
 
     //connect(tcpServer, &QTcpServer::newConnection, this, &RailroadsServer::whenConnected);
     connect(tcpServer, &QTcpServer::newConnection, this, &RailroadsServer::newConnection);
+    connect(this, &RailroadsServer::messageToSend, this, &RailroadsServer::sendAMessage);
 }
 
 bool RailroadsServer::startListening(){
@@ -72,31 +73,52 @@ void RailroadsServer::readAMessage(){
     }
 }
 
-void RailroadsServer::receiveFromClient(){
-    //client->moveToThread();
-    int maxLen = 52;
-    string* line = NULL;
-    char* bytes = new char[maxLen];
-    int nRead;
-    memset(bytes, ' ', maxLen);
-    while(!exitFlag && client != NULL){
-        QMutexLocker locker(&m);
-        bool ready = client->waitForReadyRead(20);
-        if(ready){
-            nRead = client->readLine(bytes, maxLen);
-            locker.unlock();
-            if(nRead > 0){
-                line = new string(bytes);
-                log("SERVER", string("Received ") + *line);
-                messages.push(line);
-            }else if(nRead == -1){
-                log("SERVER", "Received -1");
-                exitFlag = true;
-            }
-            memset(bytes, ' ', maxLen);
-        }
+void RailroadsServer::putMessage(std::string msgToSend){
+    toSend.push(new string(msgToSend));
+    log("SERVER-MAILBOX", string("Stored message to send later: ") + msgToSend);
+    emit messageToSend();
+}
+
+void RailroadsServer::sendAMessage(){
+    if(!connected){
+        return;
+    }else if (client == NULL){
+        return;
+    }else if (!client->isWritable()){
+        error("SERVER", "Client is not writable");
+        return;
     }
-    log("SERVER", "Connection to client finished, not receiving anymore");
+    string *msgToSend = toSend.pop();
+    if(msgToSend->length() == 0){
+        return;
+    }
+    int strLen = strlen(msgToSend->c_str());
+    int bytesSent = client->write(msgToSend->c_str(), strLen);
+    if (bytesSent == 0)
+    {
+        log("SERVER", "Message sent: \nZero bytes, client finished connection");
+    }
+    else if(bytesSent<0)
+    {
+        error("SERVER", "ERROR: send returned an error " + std::to_string(bytesSent));
+    }
+    else if (bytesSent < strLen)
+    {
+        log("SERVER", std::string("Message sent with less characters: \n") + *msgToSend);
+    }
+    else if (bytesSent > strLen)
+    {
+        log("SERVER", std::string("Message sent with extra characters: \n")
+            + *msgToSend + std::string("+") + std::to_string(bytesSent-strLen));
+    }
+    else
+    {
+        log("SERVER", std::string("Message sent: \n") + *msgToSend);
+    }
+    delete msgToSend;
+    if(toSend.getElements() > 0){
+        sendAMessage();
+    }
 }
 
 void RailroadsServer::msgTreatmentThread(){
@@ -126,7 +148,7 @@ void RailroadsServer::start(){
   int nSeconds = 10;
   log("SERVER", "Waiting 10s for client to connect...");
   waitingFlag = true;
-  bool connected = tcpServer->waitForNewConnection(nSeconds*1000);
+  tcpServer->waitForNewConnection(nSeconds*1000);
   log("SERVER", "...Finished Waiting for Client!");
 }
 
@@ -163,36 +185,6 @@ void RailroadsServer::clientDisconnected(){
     log("SERVER", "Client disconnected");
     exitFlag = true;
     connected = false;
-}
-
-int RailroadsServer::putMessage(std::string msgToSend){
-    if(!connected){
-        return 0;
-    }
-    int strLen = strlen(msgToSend.c_str());
-    QMutexLocker locker(&m);
-    //this->m.lock();
-    int bytesSent = client->write(msgToSend.c_str(), strLen);
-    //m.unlock();
-    locker.unlock();
-    if (bytesSent == 0)
-    {
-        log("SERVER", "Message sent: \nZero bytes, client finished connection");
-        return bytesSent;
-    }
-    else if(bytesSent<0)
-    {
-        error("SERVER", "ERROR: send returned an error " + std::to_string(bytesSent));
-        return bytesSent;
-    }else if (bytesSent < strLen){
-        log("SERVER", std::string("Message sent with less characters: \n") + msgToSend);
-    }else if (bytesSent > strLen){
-        log("SERVER", std::string("Message sent with extra characters: \n")
-            + msgToSend + std::string("+") + std::to_string(bytesSent-strLen));
-    }else{
-        log("SERVER", std::string("Message sent: \n") + msgToSend);
-    }
-    return bytesSent;
 }
 
 void RailroadsServer::treatMessage(std::string message){

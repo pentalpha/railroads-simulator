@@ -13,7 +13,7 @@ int RailsGraph::nextKeyT = 1;
 
 RailsGraph::~RailsGraph(){
     for(std::pair<string, Rail*> railPair : rails){
-        delete railPair.second;
+        //delete railPair.second;
     }
     for(std::pair<string, QSemaphore*> s : semaphores){
         delete s.second;

@@ -27,49 +27,55 @@ class TrainThread;
 
 class RailroadsServer : public QObject
 {
+    Q_OBJECT
 public:
     RailroadsServer(std::string ip, int port, RailsGraph* graph, RailroadsCanvas* canvas);
-    void whenConnected();
-    void treatMessage(std::string message);
-    bool startListening();
     bool isConnected();
     bool isWaiting();
     string getMessage();
-    int putMessage(std::string msgToSend);
-    const static int minMessage = 8;
+
+    bool startListening();
     void start();
     void stop();
+
     void sendGoToRailMessage(string id, string rail);
 
+    const static int minMessage = 8;
+    const static int minBytes = 52;
     QTcpSocket* client;
+
+public slots:
+    void putMessage(std::string msgToSend);
+
+signals:
+    void messageToSend();
+
 private:
-    RailroadsCanvas* canvas;
     void newConnection();
     void clientDisconnected();
-    void receive();
+    void sendAMessage();
+    void readAMessage();
+
+    void treatMessage(std::string message);
     void msgTreatmentThread();
-    void stopAllTrainThreads();
     void REG(std::vector<std::string> words);
     void POS(std::vector<std::string> words);
     void sendDenyToID(std::string id);
     void sendAllowToID(string id, vector<int> lengths);
+
     vector<bool> negativePaths(vector<string> path);
     vector<string> pathWithoutNegativeSign(vector<string> path, vector<bool> negative);
     bool allRailsInGraph(vector<string> rails);
     vector<int> lengthsOfPath(vector<string> path);
     std::set<TrainThread*> trainThreads;
     bool registerNewTrain(string id, vector<string> path);
-    void readAMessage();
-    //void trainThread(string id, StringQueue* trainQueue, vector<string> path, vector<bool> negative, vector<int> lengths);
-   // void reserveRail(string rail);
-    //void releaseRail(string rail);
-    void receiveFromClient();
 
+    void stopAllTrainThreads();
 
     QTcpServer* tcpServer;
     QString ipStr;
     QHostAddress addr;
-
+    RailroadsCanvas* canvas;
     //flags
     bool waitingFlag;
     bool exitFlag;
@@ -79,7 +85,7 @@ private:
     bool connected;
     QMutex m;
 
-    StringQueue messages;
+    StringQueue messages, toSend;
     RailsGraph* graph;
 };
 
