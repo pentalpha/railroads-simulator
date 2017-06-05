@@ -39,12 +39,37 @@ void RailroadsServer::newConnection(){
     exitFlag = false;
     waitingFlag = false;
     connect(client, &QTcpSocket::disconnected, this, &RailroadsServer::clientDisconnected);
+    connect(client, &QTcpSocket::readyRead, this, &RailroadsServer::readAMessage);
     client->startTransaction();
     log("SERVER", string("Waiting for messages from ") + client->peerAddress().toString().toStdString());
-    QtConcurrent::run(this, &RailroadsServer::receiveFromClient);
+    //QtConcurrent::run(this, &RailroadsServer::receiveFromClient);
     //std::thread treater(&RailroadsServer::msgTreatmentThread, this);
     //treater.detach();
     QtConcurrent::run(this, &RailroadsServer::msgTreatmentThread);
+}
+
+void RailroadsServer::readAMessage(){
+    if(!client->canReadLine()){
+        return;
+    }
+    int maxLen = 52;
+    char* bytes = new char[maxLen];
+    memset(bytes, ' ', maxLen);
+    QMutexLocker locker(&m);
+    int nRead = client->readLine(bytes, maxLen);
+    locker.unlock();
+    if(nRead > 0){
+        string* line = NULL;
+        line = new string(bytes);
+        log("SERVER", string("Received ") + *line);
+        messages.push(line);
+    }else if(nRead == -1){
+        log("SERVER", "Received -1");
+        exitFlag = true;
+    }
+    if(client->canReadLine()){
+        readAMessage();
+    }
 }
 
 void RailroadsServer::receiveFromClient(){

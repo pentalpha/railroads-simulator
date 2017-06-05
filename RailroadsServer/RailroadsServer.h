@@ -59,6 +59,7 @@ private:
     vector<int> lengthsOfPath(vector<string> path);
     std::set<TrainThread*> trainThreads;
     bool registerNewTrain(string id, vector<string> path);
+    void readAMessage();
     //void trainThread(string id, StringQueue* trainQueue, vector<string> path, vector<bool> negative, vector<int> lengths);
    // void reserveRail(string rail);
     //void releaseRail(string rail);
