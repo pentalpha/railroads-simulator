@@ -145,8 +145,8 @@ void RailroadsServer::start(){
     return;
   }
 
-  int nSeconds = 10;
-  log("SERVER", "Waiting 10s for client to connect...");
+  int nSeconds = 1;
+  log("SERVER", "Waiting 1s for client to connect...");
   waitingFlag = true;
   tcpServer->waitForNewConnection(nSeconds*1000);
   log("SERVER", "...Finished Waiting for Client!");

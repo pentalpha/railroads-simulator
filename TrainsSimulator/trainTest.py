@@ -11,15 +11,14 @@ tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 dest = (HOST, PORT)
 tcp.connect(dest)
 commands = list()
-#commands.append("\nA\nA\nA\n")
 commands.append("GOTO ID RAILX\n")
-commands.append("REG ID0 -RAIL1 RAIL2 -RAIL3 RAIL4\n");
+commands.append("REG ID0 -RAIL1 RAIL2 -RAIL3 RAIL4\n")
 commands.append("POS ID RAILX MAX\n")
 commands.append("POS ID RAILX MIN\n")
 commands.append("POS ID RAILX Xw\n")
-commands.append("REG ID1 -RAIL1 RAIL2 -RAIL3 RAIL4\n");
-commands.append("ALLOW ID LENGTH1 LENGTH2 LENGTH3 LENGTH4\n");
-commands.append("DENY ID\n");
+commands.append("REG ID1 -RAIL1 RAIL2 -RAIL3 RAIL4\n")
+commands.append("ALLOW ID LENGTH1 LENGTH2 LENGTH3 LENGTH4\n")
+commands.append("DENY ID\n")
 for cmd in commands:
 	time.sleep(1)
 	msg = cmd

@@ -55,6 +55,17 @@ RailsGraph::RailsGraph(std::string graphFilePath)
                     x2 = std::stoi(strX2);
                     y2 = std::stoi(strY2);
 
+
+                    if(x1 > x2 || y1 > y2){
+                        int auxX, auxY;
+                        auxX = x1;
+                        auxY = y1;
+                        x1 = x2;
+                        y1 = y2;
+                        x2 = auxX;
+                        y2 = auxY;
+                    }
+
                     Rail* rail = new Rail(id, length, x1, y1, x2, y2);
                     this->addRail(rail);
                 }catch(...){

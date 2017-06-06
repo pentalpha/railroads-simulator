@@ -1,0 +1,38 @@
+{
+    "alpha":{
+        "path":["A","C","D","F","E","B"],
+        "inverse-direction":[1, 0, 0, 0,
+         0, 1]
+    },
+    "alpha2":{
+        "path":["A2","B2","E2","F2","D2","C2"],
+        "inverse-direction":[0, 1, 1, 1,
+         1, 0]
+    },
+    "beta":{
+        "path":["G","Q","O","J","D"],
+        "inverse-direction":[0, 0, 1, 1,
+         1]
+    },
+    "beta2":{
+        "path":["G2","D2","J2","O2","Q"],
+        "inverse-direction":[0, 0, 1, 1,
+         1]
+    },
+    "gamma":{
+        "path":["I","M","P","H","E"],
+        "inverse-direction":[0, 0, 0, 1,
+         1]
+    },
+    "gamma2":{
+        "path":["M2","I2","E2","H2","P2"],
+        "inverse-direction":[0, 0, 0, 1,
+         1]
+    },
+    "delta":{
+        "path":["O2", "N2", "M2", "M", "N",
+         "O"],
+        "inverse-direction":[0, 0, 1, 1, 1,
+         0]
+    }
+}

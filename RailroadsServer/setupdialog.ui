@@ -136,7 +136,7 @@
        </font>
       </property>
       <property name="text">
-       <string>/home/pentalpha/railroads/min.graph</string>
+       <string>../railroads/default.graph</string>
       </property>
      </widget>
     </item>
