@@ -3,9 +3,7 @@ from multiprocessing import Queue
 import time
 import socket
 import sys
-import threading
-
-
+from threading import Thread, Lock
 
 '''
 constants
@@ -16,13 +14,16 @@ if(len(sys.argv) >= 2):
 PORT = 50001
 if(len(sys.argv) >= 3):
 	PORT = sys.argv[2]
-print("Host: " + HOST + "::" + PORT)
+print("Host: " + HOST + "::" + str(PORT))
+jsonFilePath = "../train-schedules/default.json"
+if(len(sys.argv) >= 4):
+    jsonFilePath = sys.argv[3]
 
 startTime = time.perf_counter()
 
 defaultSpeed = 0.25 #km/s
 
-sendLock = threading.Lock()
+sendLock = Lock()
 
 '''
 global data structures
@@ -34,6 +35,7 @@ trainDirection = dict()
 trainPath = dict()
 trainGotoQueues = dict()
 toSend = Queue()
+trainsWaitingForApproval = dict()
 
 '''
 functions
@@ -51,6 +53,14 @@ def sendPosUpdate(trainName, pos, server):
     msg = "POS " + trainName + " " + pos + "\n"
     sendMsg(msg, server)
 
+def splitMsgBySpaces(msg):
+    splice = []
+    if ' ' in msg:
+        splice = msg.split(' ')
+    elif '_' in msg:
+        splice = msg.split('_')
+    return splice
+
 def getRegMsgForTrain(trainName):
     msg = "REG " + trainName
     path = trainPath[trainName]
@@ -63,14 +73,44 @@ def getRegMsgForTrain(trainName):
     msg = msg + "\n"
     return msg
 
-def allowTrain(msg):
-    #something
-
 def sendTrainTo(msg):
-    #something
+    splice = splitMsgBySpaces(msg)
+    if (not(len(splice) == 3) or not(splice[1] in trains)):
+        print("Error, invalid GOTO message: " + msg)
+        return
+    else:
+        id = splice[1]
+        railToGo = splice[2]
+        trainGotoQueues[id].put(railToGo)
+
+def allowTrain(msg):
+    splice = splitMsgBySpaces(msg)
+    if len(splice) <= 2:
+        print("Error, invalid ALLOW message: " + msg)
+    else:
+        id = splice[1]
+        if not(id in trainsWaitingForApproval):
+            print("Train is not waiting for approval: " + msg)
+        else:
+            trainInfo = trainsWaitingForApproval[id]
+            trainsWaitingForApproval.remove(id)
+            if not(len(splice)-2 == len(trainInfo['path'])):
+                print("Number of lengths different from number of rails: ")
+                print(splice[2:len(splice)])
+                print(trainInfo['path'])
+            else:    
+                lengths = splice[2:len(splice)]
+                startTrainThread(trainInfo, lengths)
+                print(id + " has been allowed.")
 
 def denyTrain(msg):
-    #something
+    splice = splitMsgBySpaces(msg)
+    if(not(len(splice) == 2) or not(splice[1] in trains)):
+        print("Error, invalid DENY message: " + msg)
+    else:
+        id = splice[1]
+        trainsWaitingForApproval.remove(id)
+        print(id + " has been denyed.")
 
 def treatMsg(msg):
     print("Received " + msg)
@@ -134,14 +174,35 @@ def fillTrainData(filePath):
     for train in trains:
         trainGotoQueues[train] = Queue()
 
+def regTrains():
+    for train in trains:
+        trainInfo = dict()
+        trianInfo['name'] = train
+        trainInfo['path'] = trainPath[train]
+        trainsWaitingForApproval[train] = trainInfo
+        msg = getRegMsgForTrain(train)
+        sendMsg(msg)
+
 def reachedEnd(pos, end, inverse):
     if(inverse):
         return pos <= 0.0
     else:
         return pos >= end
 
-def trainThread(trainName, pathLength, pathDirection, trainGotoQueue, server):
-    while(!trainStopFlag[trainName]):
+def startTrainThread(trainInfo, lengthsArray):
+    lengths = dict()
+    for i in range(0,len(lengthsArray)):
+        lengths[trainInfo['path'][i]] = lengthsArray[i]
+    trainName = trainInfo['name']
+    queue = trainGotoQueues[trainName]
+    directionArray = trainDirection[trainName]
+    pathDirection = dict()
+    for i in range(0,len(directionArray)):
+        pathDirection[trainInfo['path'][i]] = directionArray[i]
+    thread = Thread(target=trainThread, args=(trainName, lengths, pathDirection, queue))
+
+def trainThread(trainName, pathLength, pathDirection, trainGotoQueue):
+    while(not trainStopFlag[trainName]):
         while(trainGotoQueue.empty()):
             time.sleep(0.1)
         actualRail = trainGotoQueue.get()
@@ -156,7 +217,7 @@ def trainThread(trainName, pathLength, pathDirection, trainGotoQueue, server):
             pos = float(railLength)
         lastUptime = getUptime()
         deltaTime = 0.0
-        while(!reachedEnd(pos, railLength, inverse)):
+        while(not reachedEnd(pos, railLength, inverse)):
             deltaTime = getUptime() - lastUptime #duration, in seconds, of the last while cycle
             lastUptime = getUptime()
             moved = trainSpeed[trainName]*deltaTime #constant movement rate, in km/s, despite the computer's speed
@@ -181,7 +242,7 @@ def connectionLoop(tcpSocket):
         for s in readable:
             try:
                 msg = s.recv(1024)
-            except socket.timeout, e:
+            except socket.timeout as e:
                 err = e.args[0]
                 # this next if/else is a bit redundant, but illustrates how the
                 # timeout exception is setup
@@ -195,7 +256,7 @@ def connectionLoop(tcpSocket):
                     inputs.remove(s)
                     outputs.remove(s)
                     finish(s)
-            except socket.error, e:
+            except socket.error as e:
                 print("Something else happened, handle error")
                 print(e)
                 inputs.remove(s)
@@ -212,7 +273,7 @@ def connectionLoop(tcpSocket):
             
         for s in writable:
             try:
-                if(!sendQueue.empty()):
+                if(not sendQueue.empty()):
                     next_msg = sendQueue.get_nowait()
                     s.send(next_msg.encode())
             except Exception as e:
@@ -229,20 +290,24 @@ def connectionLoop(tcpSocket):
 '''
 entry point
 '''
-fillTrainData("../train-schedules/default.json")
+fillTrainData(jsonFilePath)
 for train in trains:
     print(getRegMsgForTrain(train))
 
 tcpSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 dest = (HOST, PORT)
-tcpSocket.setblocking(0)
 try:
     #connect
     tcpSocket.connect(dest)
+    tcpSocket.setblocking(0)
     thread = Thread(target = connectionLoop, args = (tcpSocket))
     thread.start()
+    regTrains()
     
 except socket.timeout:
     print("Connection timeout")
+except Exception as e:
+    print("Unknown error: ")
+    print(e)
 
-finish(tcpSocket)
+#finish(tcpSocket)
