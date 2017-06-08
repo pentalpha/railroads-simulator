@@ -62,15 +62,16 @@ void RailroadsServer::readAMessage(){
     if(nRead > 0){
         string* line = NULL;
         line = new string(bytes);
+        *line = line->substr(0, line->length()-1);
         log("SERVER", string("Received ") + *line);
         messages.push(line);
     }else if(nRead == -1){
         log("SERVER", "Received -1");
         exitFlag = true;
     }
-    if(client->canReadLine()){
+    /*if(client->canReadLine()){
         readAMessage();
-    }
+    }*/
 }
 
 void RailroadsServer::putMessage(std::string msgToSend){
@@ -88,12 +89,12 @@ void RailroadsServer::sendAMessage(){
         error("SERVER", "Client is not writable");
         return;
     }
-    string *msgToSend = toSend.pop();
-    if(msgToSend->length() == 0){
+    string msgToSend = toSend.pop();
+    if(msgToSend == ""){
         return;
     }
-    int strLen = strlen(msgToSend->c_str());
-    int bytesSent = client->write(msgToSend->c_str(), strLen);
+    int strLen = msgToSend.length();
+    int bytesSent = client->write(msgToSend.c_str(), strLen);
     if (bytesSent == 0)
     {
         log("SERVER", "Message sent: \nZero bytes, client finished connection");
@@ -104,21 +105,20 @@ void RailroadsServer::sendAMessage(){
     }
     else if (bytesSent < strLen)
     {
-        log("SERVER", std::string("Message sent with less characters: \n") + *msgToSend);
+        log("SERVER", std::string("Message sent with less characters: \n") + msgToSend);
     }
     else if (bytesSent > strLen)
     {
         log("SERVER", std::string("Message sent with extra characters: \n")
-            + *msgToSend + std::string("+") + std::to_string(bytesSent-strLen));
+            + msgToSend + std::string("+") + std::to_string(bytesSent-strLen));
     }
     else
     {
-        log("SERVER", std::string("Message sent: \n") + *msgToSend);
+        log("SERVER", std::string("Message sent: \n") + msgToSend);
     }
-    delete msgToSend;
-    if(toSend.getElements() > 0){
+    /*if(toSend.getElements() > 0){
         sendAMessage();
-    }
+    }*/
 }
 
 void RailroadsServer::msgTreatmentThread(){
@@ -157,12 +157,8 @@ bool RailroadsServer::isConnected(){
 }
 
 std::string RailroadsServer::getMessage(){
-  std::string *msg = messages.pop();
-  if(msg == NULL){
-    return "";
-  }else{
-    return *msg;
-  }
+  std::string msg = messages.pop();
+  return msg;
 }
 
 void RailroadsServer::stop(){
@@ -188,7 +184,7 @@ void RailroadsServer::clientDisconnected(){
 }
 
 void RailroadsServer::treatMessage(std::string message){
-    log("SERVER", std::string("Treating '") + message + std::string("'"));
+    //log("SERVER", std::string("Treating '") + message + std::string("'"));
     //int posPOS = message.find_first_of("POS");
     std::vector<std::string> words;
     boost::split(words, message, boost::is_any_of("_ "));
@@ -216,12 +212,14 @@ void RailroadsServer::REG(std::vector<std::string> words){
 }
 
 void RailroadsServer::POS(std::vector<std::string> words){
-    log("SERVER-POS", vectorToStr(words));
+    //log("SERVER-POS", vectorToStr(words));
     string id = words[0];
     words.erase(words.begin());
     StringQueue* q = Events::getQueue(id);
-    if(q != NULL){
-        q->push(new string(words[1].c_str()));
+    if(words[0].length() <= 0){
+        error("SERVER", string("Invalid pos for ") + id + string(": ") + string(words[0]));
+    }else if(q != NULL){
+        q->push(new string(words[0].c_str()));
     }
 }
 
@@ -272,19 +270,22 @@ vector<string> RailroadsServer::pathWithoutNegativeSign(vector<string> path, vec
     return noNegative;
 }
 
-bool RailroadsServer::allRailsInGraph(vector<string> vec){
+string RailroadsServer::allRailsInGraph(vector<string> vec){
     for(string p : vec){
         if (graph->railInGraph(p) == false){
-            return false;
+            return p;
         }
     }
-    return true;
+    return "";
 }
 
 vector<int> RailroadsServer::lengthsOfPath(vector<string> path){
     vector<int> lengths;
     for(int i = 0; i < path.size(); i++){
-        lengths.push_back(graph->getRail(path[i])->length);
+        string key = path[i];
+        Rail* rail = graph->getRail(key);
+        int len = rail->length;
+        lengths.push_back(len);
     }
     return lengths;
 }
@@ -297,16 +298,21 @@ bool RailroadsServer::registerNewTrain(string id, vector<string> path){
     }
     auto negative = negativePaths(path);
     auto noNegativeSign = pathWithoutNegativeSign(path, negative);
-    if(!allRailsInGraph(noNegativeSign)){
-        error("SERVER", string("Some of the rails in the given path could not be found")
-              + vectorToStr(path));
+    string absentStr = allRailsInGraph(noNegativeSign);
+    if(absentStr != ""){
+        error("SERVER", string("Some of the rails in the given path could not be found ")
+              + vectorToStr(noNegativeSign) + string(": ") + absentStr);
         sendDenyToID(id);
         return false;
+    }else{
+        log("SERVER", string("All rails informed by ") + id + string(" are valid."));
     }
-    auto lengths = lengthsOfPath(noNegativeSign);
+    vector<int> lengths = lengthsOfPath(noNegativeSign);
+    log("SERVER", string("Creating train thread for ") + id);
     TrainThread* train = new TrainThread(id, q, noNegativeSign, negative,
                                          lengths, this->graph, this->canvas, this);
     sendAllowToID(id, lengths);
+    log("SERVER", string("Starting train thread for ") + id);
     train->start();
     trainThreads.insert(train);
     return true;

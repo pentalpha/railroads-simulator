@@ -31,5 +31,5 @@ void Global::destroyAll(){
     delete viewer;
     std::this_thread::sleep_for(std::chrono::milliseconds(600));
     delete server;
-    delete graph;
+    //delete graph;
 }

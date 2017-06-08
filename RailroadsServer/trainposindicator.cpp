@@ -47,6 +47,14 @@ bool TrainPosIndicator::isDead(){
     return dead;
 }
 
+void TrainPosIndicator::UpdatePos(sf::Vector2f newPos, bool dark){
+    if(dark){
+        shape.setFillColor(darkColor);
+    }
+    shape.setPosition(newPos.x - radius, newPos.y - radius);
+    trainName.setPosition(shape.getPosition().x, shape.getPosition().y - radius*2);
+}
+
 void TrainPosIndicator::Update(){
     if(!dead){
         if(orphaned){

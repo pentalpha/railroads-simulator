@@ -65,7 +65,7 @@ private:
 
     vector<bool> negativePaths(vector<string> path);
     vector<string> pathWithoutNegativeSign(vector<string> path, vector<bool> negative);
-    bool allRailsInGraph(vector<string> rails);
+    string allRailsInGraph(vector<string> rails);
     vector<int> lengthsOfPath(vector<string> path);
     std::set<TrainThread*> trainThreads;
     bool registerNewTrain(string id, vector<string> path);
@@ -99,7 +99,7 @@ public:
     string name;
     TrainPosIndicator* indicator;
     StringQueue* evtQueue;
-    float pos;
+    double pos;
     bool maximal;
     void stop();
     bool updating();

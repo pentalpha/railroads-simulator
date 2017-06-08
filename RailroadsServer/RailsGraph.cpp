@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include "logging.h"
 #include "rail.h"
 
 using namespace std;
@@ -15,9 +16,12 @@ RailsGraph::~RailsGraph(){
     for(std::pair<string, Rail*> railPair : rails){
         //delete railPair.second;
     }
-    for(std::pair<string, QSemaphore*> s : semaphores){
-        delete s.second;
-    }
+    /*for(std::pair<string, QSemaphore*> s : semaphores){
+        if(s.second != NULL){
+            s.second->release();
+            delete s.second;
+        }
+    }*/
 }
 
 RailsGraph::RailsGraph(std::string graphFilePath)
@@ -67,6 +71,10 @@ RailsGraph::RailsGraph(std::string graphFilePath)
                     }
 
                     Rail* rail = new Rail(id, length, x1, y1, x2, y2);
+                    if(rail == NULL){
+                        error("GRAPH", "Null rail built:");
+                        error("GRAPH", id);
+                    }
                     this->addRail(rail);
                 }catch(...){
                     std::cout << "Error parsing: " << splitedStart[0]  << " " << splitedStart[1]
@@ -137,6 +145,9 @@ void RailsGraph::addAdj(std::string name, Rail* rail){
 Rail* RailsGraph::getRail(std::string name){
     QMutexLocker locker(&m);
     Rail* rail = rails[name];
+    if(rail == NULL){
+        error("GRAPH",std::string("Requested rail has NULL value: ") + name);
+    }
     return rail;
 }
 

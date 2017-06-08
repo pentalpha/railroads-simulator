@@ -39,7 +39,7 @@ TrainIndicatorsTest::TrainIndicatorsTest(string railName, float speed,
 
 void TrainIndicatorsTest::run(){
     while(true){
-        viewer->canvas->addTrain(rail->name, pos, string("Train ") + rail->name, (pos >= length));
+        viewer->canvas->updateTrainPos(rail->name, pos, string("Train ") + rail->name, (pos >= length));
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         //std::cout << pos << std::endl;
         if(pos >= length){

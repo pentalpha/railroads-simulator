@@ -4,54 +4,64 @@ import time
 import socket
 import sys
 from threading import Thread, Lock
-
+from blessed import *
+import traceback
+import select
 '''
 constants
 '''
 HOST = "127.0.0.1"
-if(len(sys.argv) >= 2):
-	HOST = sys.argv[1]
-PORT = 50001
-if(len(sys.argv) >= 3):
-	PORT = sys.argv[2]
-print("Host: " + HOST + "::" + str(PORT))
+#if(len(sys.argv) >= 2):
+#	HOST = sys.argv[1]
+PORT = 50002
+#if(len(sys.argv) >= 3):
+#	PORT = sys.argv[2]
+
 jsonFilePath = "../train-schedules/default.json"
-if(len(sys.argv) >= 4):
-    jsonFilePath = sys.argv[3]
+#if(len(sys.argv) >= 4):
+#    jsonFilePath = sys.argv[3]
 
 startTime = time.perf_counter()
 
 defaultSpeed = 0.25 #km/s
 
 sendLock = Lock()
+onInterface = False
+socketFinished = False
 
 '''
 global data structures
 '''
 trains = list()
-trainSpeed = []
+trainSpeed = dict()
 trainStopFlag = dict()
 trainDirection = dict()
 trainPath = dict()
 trainGotoQueues = dict()
 toSend = Queue()
 trainsWaitingForApproval = dict()
+serverLog = list()
 
 '''
 functions
 '''
 #Returns the number of seconds since the program started.
+def addToLog(msg):
+    serverLog.append(msg)
+    print(msg)
+
 def getUptime():
     return time.perf_counter() - startTime
 
-def sendMsg(msg, server):
+def sendMsg(msg):
+    addToLog("Pushed to send queue: " + msg)
     toSend.put(msg)
     #with sendLock:
     #    server.send(msg.encode())
 
-def sendPosUpdate(trainName, pos, server):
+def sendPosUpdate(trainName, pos):
     msg = "POS " + trainName + " " + pos + "\n"
-    sendMsg(msg, server)
+    sendMsg(msg)
 
 def splitMsgBySpaces(msg):
     splice = []
@@ -76,7 +86,7 @@ def getRegMsgForTrain(trainName):
 def sendTrainTo(msg):
     splice = splitMsgBySpaces(msg)
     if (not(len(splice) == 3) or not(splice[1] in trains)):
-        print("Error, invalid GOTO message: " + msg)
+        addToLog("Error, invalid GOTO message: " + msg)
         return
     else:
         id = splice[1]
@@ -86,50 +96,61 @@ def sendTrainTo(msg):
 def allowTrain(msg):
     splice = splitMsgBySpaces(msg)
     if len(splice) <= 2:
-        print("Error, invalid ALLOW message: " + msg)
+        addToLog("Error, invalid ALLOW message: " + msg)
     else:
         id = splice[1]
         if not(id in trainsWaitingForApproval):
-            print("Train is not waiting for approval: " + msg)
+            addToLog("Train is not waiting for approval: " + msg)
         else:
             trainInfo = trainsWaitingForApproval[id]
-            trainsWaitingForApproval.remove(id)
+            del trainsWaitingForApproval[id]
             if not(len(splice)-2 == len(trainInfo['path'])):
-                print("Number of lengths different from number of rails: ")
-                print(splice[2:len(splice)])
-                print(trainInfo['path'])
+                addToLog("Number of lengths different from number of rails: ")
+                addToLog(splice[2:len(splice)])
+                addToLog(trainInfo['path'])
             else:    
                 lengths = splice[2:len(splice)]
                 startTrainThread(trainInfo, lengths)
-                print(id + " has been allowed.")
+                addToLog(id + " has been allowed.")
 
 def denyTrain(msg):
     splice = splitMsgBySpaces(msg)
     if(not(len(splice) == 2) or not(splice[1] in trains)):
-        print("Error, invalid DENY message: " + msg)
+        addToLog("Error, invalid DENY message: " + msg)
     else:
         id = splice[1]
-        trainsWaitingForApproval.remove(id)
-        print(id + " has been denyed.")
+        del trainsWaitingForApproval[id]
+        addToLog(id + " has been denyed.")
 
 def treatMsg(msg):
-    print("Received " + msg)
-    splice = msg.split()
-    if '_' in msg:
-        splice = msg.split(str='_')
-    if 'ALLOW' in msg:
-        allowTrain(msg)
-    elif 'GOTO' in msg:
-        sendTrainTo(msg)
-    elif 'DENY' in msg:
-        denyTrain(msg)
+    decoded = msg
+    if decoded.endswith('\n'):
+        decoded = decoded[:-1]
+    
+    if 'ALLOW' in decoded:
+        addToLog("Received ALLOW: " + decoded)
+        allowTrain(decoded)
+    elif 'GOTO' in decoded:
+        addToLog("Received GOTO: " + decoded)
+        sendTrainTo(decoded)
+    elif 'DENY' in decoded:
+        addToLog("Received DENY: " + decoded)
+        denyTrain(decoded)
+    else:
+        addToLog("Received Undefined message: " + decoded)
 
 def finish(sock):
-    for train in trains:
-        trainStopFlag[train] = True
-    tcpSocket.shutdown()
-    tcpSocket.close()
-    time.sleep(1)
+    global socketFinished
+    if socketFinished:
+        addToLog("Already finished socket")
+    else:
+        addToLog("Finishing socket")
+        for train in trains:
+            trainStopFlag[train] = True
+        sock.shutdown(socket.SHUT_RDWR)
+        sock.close()
+        socketFinished = True
+        time.sleep(1)
 
 #filePath   path to .json file with train name, path and directions
 #return     json representation of the file
@@ -141,11 +162,11 @@ def getTrainSchedule(filePath):
 
 def intListToBoolArray(intList):
     boolList = [None]*len(intList)
-    #print("boolList has space for " + str(len(boolList)))
-    #print("range is: ")
-    #print(range(0,len(intList)-1))
+    #addToLog("boolList has space for " + str(len(boolList)))
+    #addToLog("range is: ")
+    #addToLog(range(0,len(intList)-1))
     for i in range(0,len(intList)):
-        #print(i)
+        #addToLog(i)
         if(intList[i] > 0):
             boolList[i] = True
         else:
@@ -158,18 +179,17 @@ def getTrainDataFromJson(jsonDict):
         trains.append(key)
     for trainName in trains:
         trainPath[trainName] = jsonDict[trainName]["path"]
-        #print(trainName + " path has " + str(len(trainPath[trainName])) + " railroads.")
+        #addToLog(trainName + " path has " + str(len(trainPath[trainName])) + " railroads.")
         inverseDirectionArray = intListToBoolArray(jsonDict[trainName]["inverse-direction"])
-        #print(trainName + ": ")
-        #print(inverseDirectionArray)
+        #addToLog(trainName + ": ")
+        #addToLog(inverseDirectionArray)
         trainDirection[trainName] = inverseDirectionArray
 
 #prepare input data from a .json file
 def fillTrainData(filePath):
     jsonDict = getTrainSchedule(filePath)
     getTrainDataFromJson(jsonDict)
-    trainSpeed = [None]*len(trains)
-    for i in range(0, len(trains)):
+    for i in trains:
         trainSpeed[i] = defaultSpeed
     for train in trains:
         trainGotoQueues[train] = Queue()
@@ -177,9 +197,10 @@ def fillTrainData(filePath):
 def regTrains():
     for train in trains:
         trainInfo = dict()
-        trianInfo['name'] = train
+        trainInfo['name'] = train
         trainInfo['path'] = trainPath[train]
         trainsWaitingForApproval[train] = trainInfo
+        trainStopFlag[train] = False
         msg = getRegMsgForTrain(train)
         sendMsg(msg)
 
@@ -190,6 +211,7 @@ def reachedEnd(pos, end, inverse):
         return pos >= end
 
 def startTrainThread(trainInfo, lengthsArray):
+    addToLog("Trying to start thread for " + trainInfo['name'])
     lengths = dict()
     for i in range(0,len(lengthsArray)):
         lengths[trainInfo['path'][i]] = lengthsArray[i]
@@ -200,12 +222,21 @@ def startTrainThread(trainInfo, lengthsArray):
     for i in range(0,len(directionArray)):
         pathDirection[trainInfo['path'][i]] = directionArray[i]
     thread = Thread(target=trainThread, args=(trainName, lengths, pathDirection, queue))
+    addToLog("Starting thread for " + trainInfo['name'])
+    #trainStopFlag[trainName] = False
+    thread.start()
 
 def trainThread(trainName, pathLength, pathDirection, trainGotoQueue):
-    while(not trainStopFlag[trainName]):
+    addToLog(trainName + " started in his own thread")
+    if trainStopFlag[trainName]:
+        addToLog("Tryed to start " + trainName + " but found an exit flag")
+        return
+    while(trainStopFlag[trainName] == False):
         while(trainGotoQueue.empty()):
-            time.sleep(0.1)
+            pass
+        addToLog(trainName + " finished waiting for GOTO")
         actualRail = trainGotoQueue.get()
+        addToLog(trainName + " going to " + actualRail)
         if(actualRail == "STOP"):
             trainStopFlag[trainName] = True
             break
@@ -217,7 +248,9 @@ def trainThread(trainName, pathLength, pathDirection, trainGotoQueue):
             pos = float(railLength)
         lastUptime = getUptime()
         deltaTime = 0.0
-        while(not reachedEnd(pos, railLength, inverse)):
+        addToLog(trainName + " moving through " + actualRail)
+        lastPosSent = -3.3333;
+        while(not reachedEnd(pos, float(railLength), inverse)):
             deltaTime = getUptime() - lastUptime #duration, in seconds, of the last while cycle
             lastUptime = getUptime()
             moved = trainSpeed[trainName]*deltaTime #constant movement rate, in km/s, despite the computer's speed
@@ -225,89 +258,146 @@ def trainThread(trainName, pathLength, pathDirection, trainGotoQueue):
                 pos = pos - moved
             else:
                 pos = pos + moved
-            sendPosUpdate(trainName, str(pos))
+            if abs(pos - lastPosSent) >= 0.05:
+                sendPosUpdate(trainName, str(pos))
+                lastPosSent = pos
+            #time.sleep(0.1)
+        addToLog(trainName + " finished " + actualRail)
         if(inverse):
             sendPosUpdate(trainName, "MIN")
         else:
             sendPosUpdate(trainName, "MAX")
+    addToLog("Finishing " + trainName + " thread.")
 
 def connectionLoop(tcpSocket):
-    inputs = [tcpSocket]
-    outputs = [tcpSocket]
+    inputs = list()
+    inputs.append(tcpSocket)
+    outputs = list()
+    outputs.append(tcpSocket)
     sendQueue = toSend
 
     while inputs:
-        readable, writable, exceptional = select.select(
-            inputs, outputs, inputs)
+        global socketFinished
+        if(socketFinished):
+            addToLog("Before select: Socket finished, exiting select loop")
+            break
+        readable, writable, exceptional = select.select(inputs, outputs, inputs)
         for s in readable:
             try:
-                msg = s.recv(1024)
+                #msg = s.recv(1024)
+                msg = s.makefile().readline()
             except socket.timeout as e:
                 err = e.args[0]
                 # this next if/else is a bit redundant, but illustrates how the
                 # timeout exception is setup
                 if err == 'timed out':
-                    print ('recv timed out, retry later')
+                    addToLog ('recv timed out, retry later')
                     sleep(0.01)
                     continue
                 else:
-                    print('Bad timeout:')
-                    print(e)
-                    inputs.remove(s)
-                    outputs.remove(s)
+                    addToLog('Bad timeout:')
+                    addToLog(e)
                     finish(s)
             except socket.error as e:
-                print("Something else happened, handle error")
-                print(e)
-                inputs.remove(s)
-                outputs.remove(s)
+                addToLog("Finishing because: Something else happened, handle error")
+                addToLog(e)
+                print(traceback.format_exception(None, e, e.__traceback__), file=sys.stderr, flush=True)
                 finish(s)
             else:
                 if len(msg) == 0:
-                    print('orderly shutdown on server end')
-                    inputs.remove(s)
-                    outputs.remove(s)
+                    addToLog('Finishing because: orderly shutdown on server end')
                     finish(s)
                 else:
-                    treatMsg(str(msg))
-            
+                    addToLog("readline: " + msg)
+                    treatMsg(msg)
+
+        if(socketFinished):
+            addToLog("After readable: Socket finished, exiting select loop")
+            break    
         for s in writable:
             try:
                 if(not sendQueue.empty()):
                     next_msg = sendQueue.get_nowait()
+                    addToLog("Sending: " + next_msg)
                     s.send(next_msg.encode())
             except Exception as e:
-                print(e)
-                inputs.remove(s)
-                outputs.remove(s)
+                addToLog(e)
+                addToLog("Finishing because of exception during msg sending")
                 finish(s)
 
+        if(socketFinished):
+            addToLog("After writable: Socket finished, exiting select loop")
+            break
         for s in exceptional:
-            inputs.remove(s)
-            outputs.remove(s)
+            addToLog("Finishing because socket is in exceptional set")
             finish(s)
+
+def display_screen(selection):
+    term = Terminal()
+    print(term.clear())
+
+    for train in trains:
+        text = train
+        if train in trainsWaitingForApproval:
+            text = text + " (Waiting)"
+        text = text + " | " + str(trainSpeed[train]) + "km/s"
+        if(selection == 0):
+            print('{t.bold_red_reverse}{title}'.format(t=term, title=text))
+        else:
+            print('{t.normal}{title}'.format(t=term, title=text))
+        selection = selection - 1
+    print('---- Log with ' + str(len(serverLog)) + ' messages ----')
+    for log in reversed(serverLog):
+        print('{t.normal}{title}'.format(t=term, title=log))
 
 '''
 entry point
 '''
 fillTrainData(jsonFilePath)
-for train in trains:
-    print(getRegMsgForTrain(train))
-
+addToLog("Host: " + HOST + "::" + str(PORT))
 tcpSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-dest = (HOST, PORT)
+dest = (HOST, int(PORT))
 try:
     #connect
     tcpSocket.connect(dest)
     tcpSocket.setblocking(0)
-    thread = Thread(target = connectionLoop, args = (tcpSocket))
+    thread = Thread(target = connectionLoop, args = (tcpSocket,))
     thread.start()
     regTrains()
-    
-except socket.timeout:
-    print("Connection timeout")
-except Exception as e:
-    print("Unknown error: ")
-    print(e)
+    '''
+    onInterface = True
+    term = Terminal()
+    with term.fullscreen():
+        selection = 0
+        #display_screen(selection)
+        selection_inprogress = True
+        with term.cbreak():
+            while selection_inprogress:
+                key = term.inkey()
+                if key.is_sequence:
+                    if key.name == 'KEY_DOWN':
+                        selection += 1
+                    if key.name == 'KEY_UP':
+                        selection -= 1
+                    if key.name == 'KEY_ENTER':
+                        selection_inprogress = False
+                elif key:
+                    addToLog("got {0}.".format(key))
 
-#finish(tcpSocket)
+                selection = selection % len(trains)
+                #display_screen(selection)
+    onInterface = False
+    '''
+    while not socketFinished:
+        pass
+except socket.timeout:
+    onInterface = False
+    addToLog("Connection timeout")
+except Exception as e:
+    onInterface = False
+    addToLog("Unknown error: ")
+    addToLog(e)
+    print(traceback.format_exception(None, e, e.__traceback__), file=sys.stderr, flush=True)
+
+addToLog("Finishing because reached end of code")
+finish(tcpSocket)

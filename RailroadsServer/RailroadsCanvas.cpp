@@ -39,15 +39,16 @@ void RailroadsCanvas::OnUpdate(){
     trainShapes.remove_if(isDead);
     //sf::Time dt = deltaClock.restart();
     indicatorParamsLocker.lock();
-    while(indicatorsToMake.size() > 0)
+    while(indicatorsToMove.size() > 0)
     {
-        addTrain(indicatorsToMake.front());
-        indicatorsToMake.pop();
+        TrainMove move = indicatorsToMove.front();
+        moveTrain(move);
+        indicatorsToMove.pop();
     }
     indicatorParamsLocker.unlock();
 
-    for(TrainPosIndicator* train : trainShapes){
-        train->Update();
+    for(pair<string, TrainPosIndicator*> train : actualTrainShapes){
+        train.second->Update();
     }
     //DRAW
     this->clear(sf::Color(255, 255, 255, 255));
@@ -55,8 +56,8 @@ void RailroadsCanvas::OnUpdate(){
         this->draw(shape);
     }
     drawGridPoints(12);
-    for(TrainPosIndicator* train : trainShapes){
-        train->Draw(this);
+    for(pair<string, TrainPosIndicator*> train : actualTrainShapes){
+        train.second->Draw(this);
     }
 }
 
@@ -102,24 +103,25 @@ void RailroadsCanvas::railShapesFromGraph(){
     }
 }
 
-void RailroadsCanvas::addTrain(std::string name, float pos,
-                                             std::string trainID, bool dark){
-    TrainPosIndicatorParams indicator;
-    indicator.pos = pos;
-    indicator.name = name;
-    indicator.trainID = trainID;
-    indicator.dark = dark;
+void RailroadsCanvas::updateTrainPos(std::string name, float pos, std::string trainID, bool dark){
+    TrainMove move;
+    move.pos = pos;
+    move.railName = name;
+    move.trainID = trainID;
+    move.dark = dark;
 
-    indicatorParamsLocker.lock();
-    indicatorsToMake.push(indicator);
-    indicatorParamsLocker.unlock();
+    //if(pos >= 0.02 && pos <= 0.98){
+        indicatorParamsLocker.lock();
+        indicatorsToMove.push(move);
+        indicatorParamsLocker.unlock();
+    //}
 }
 
-void RailroadsCanvas::addTrain(TrainPosIndicatorParams indicator){
-    Rail* rail = graph->getRail(indicator.name);
+sf::Vector2f RailroadsCanvas::posFromRailAndDistance(Rail* rail, float dist){
     sf::Vector2f railOrigin = this->pointToPos(rail->xStart, rail->yStart);
     sf::Vector2f trainPos;
-    float pos = indicator.pos*sizeMultiplier*gridBase;
+    float pos = ((float)dist)*((float)sizeMultiplier)*((float)gridBase);
+
     if(rail->yStart == rail->yEnd){
         trainPos = sf::Vector2f(railOrigin.x + pos, railOrigin.y);
     }else if (rail->xStart == rail->xEnd){
@@ -127,18 +129,34 @@ void RailroadsCanvas::addTrain(TrainPosIndicatorParams indicator){
     }else{
         trainPos = sf::Vector2f(railOrigin.x + pos, railOrigin.y + pos);
     }
-    //std::cout << trainPos.x << " " << trainPos.y << std::endl;
-    TrainPosIndicator* train = new TrainPosIndicator(trainPos,
-                                                     new string(indicator.trainID),
-                                                     indicator.dark);
-    addTrain(train);
+    return trainPos;
 }
 
-void RailroadsCanvas::addTrain(TrainPosIndicator* trainIndicator){
-    TrainPosIndicator* oldShape = actualTrainShapes[trainIndicator->trainName.getString()];
-    if(oldShape != NULL){
-        oldShape->Disown();
+void RailroadsCanvas::addTrain(TrainMove move){
+    Rail* rail = graph->getRail(move.railName);
+    sf::Vector2f trainPos = posFromRailAndDistance(rail, move.pos);
+
+    /*log("CANVAS", move.trainID + std::string(" ") + std::to_string(trainPos.x)
+        + std::string(" ") + std::to_string(trainPos.y));
+    log("CANVAS", move.trainID + std::string(" ") + std::to_string(trainPos.x + move.pos)
+        + std::string(" ") + std::to_string(trainPos.y + move.pos));*/
+
+    TrainPosIndicator* train = new TrainPosIndicator(trainPos,
+                                                     new string(move.trainID),
+                                                     move.dark);
+    actualTrainShapes[move.railName] = train;
+}
+
+void RailroadsCanvas::moveTrain(TrainMove move){
+    TrainPosIndicator* shape = actualTrainShapes[move.railName];
+    if(shape != NULL){
+        Rail* rail = graph->getRail(move.railName);
+        sf::Vector2f newPos = posFromRailAndDistance(rail, move.pos);
+        log("CANVAS", move.trainID + std::to_string(move.pos)
+            + std::string(" | ") + std::to_string(newPos.x) + std::string(", ") + std::to_string(newPos.y));
+        shape->UpdatePos(newPos, move.dark);
+        //oldShape->Disown();
+    }else{
+        addTrain(move);
     }
-    trainShapes.push_back(trainIndicator);
-    actualTrainShapes[trainIndicator->trainName.getString()] = trainIndicator;
 }

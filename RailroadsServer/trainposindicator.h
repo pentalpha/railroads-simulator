@@ -3,8 +3,8 @@
 #include <SFML/Graphics.hpp>
 #include "logging.h"
 
-struct TrainPosIndicatorParams{
-    std::string name;
+struct TrainMove{
+    std::string railName;
     float pos;
     std::string trainID;
     bool dark;
@@ -15,6 +15,7 @@ class TrainPosIndicator
 public:
     TrainPosIndicator(sf::Vector2f pos, std::string* name, bool dark = false);
     void Draw(sf::RenderWindow* window);
+    void UpdatePos(sf::Vector2f newPos, bool dark = false);
     void Update();
     void Disown();
     bool isDead();

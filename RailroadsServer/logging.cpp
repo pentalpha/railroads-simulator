@@ -30,7 +30,7 @@ std::string vectorToStr(std::vector<int> v){
         if(first){
             first = false;
         }else{
-            str += std::string("_");
+            str += std::string(" ");
         }
         str += std::to_string(x);
     }

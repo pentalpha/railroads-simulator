@@ -1,4 +1,5 @@
 #include "RailroadsServer.h"
+#include <QString>
 
 TrainThread::TrainThread(string id, StringQueue* trainQueue, vector<string> path,
                          vector<bool> negative, vector<int> lengths,
@@ -55,28 +56,31 @@ void TrainThread::run()
         }
         reserveRail(rails[actualRail]);
         server->sendGoToRailMessage(name, rails[actualRail]);
-        pos = -1;
+        pos = -1.0;
         maximal = false;
         while(true){
-            string* m = evtQueue->pop();
-            if(m != NULL){
-                pos = -1;
+            QString m(evtQueue->pop().c_str());
+            if(m != ""){
+                pos = -1.0;
                 maximal = false;
                 try{
-                    pos = std::stoi(*m);
+                    pos = m.toDouble();
+                    //if(pos >= 0.001){
+                    //    log(string("TRAIN-") + name, m.toStdString() + string("=") + std::to_string(pos));
+                    //}
                 }catch(...){
-                    if(*m == "MAX"){
+                    if(m == QString("MAX")){
                         pos = railsLength[actualRail];
                         maximal = true;
-                    }else if(*m == "MIN"){
+                    }else if(m == QString("MIN")){
                         pos = 0.0;
                         maximal = true;
                     }else{
-                        error("SERVER", *m + string(" is no valid position."));
+                        error("SERVER", m.toStdString() + string(" is no valid position."));
                     }
                 }
                 if(pos != -1){
-                    canvas->addTrain(rails[actualRail], pos, name, maximal);
+                    canvas->updateTrainPos(rails[actualRail], pos, name, maximal);
                 }
             }
             if(maximal){

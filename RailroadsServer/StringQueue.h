@@ -9,7 +9,7 @@
 class StringQueue
 {
  public:
-  std::string* pop();
+  std::string pop();
   void push(std::string* item);
   int getElements();
   StringQueue() : localMutex(){

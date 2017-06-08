@@ -1,16 +1,16 @@
 #include "StringQueue.h"
 
-std::string* StringQueue::pop()
+std::string StringQueue::pop()
 {
   QMutexLocker locker(&localMutex);
   if (strings.empty())
   {
-    return NULL;
+    return "";
   }
   std::string *val = strings.front();
   strings.pop();
   elements--;
-  return val;
+  return std::string(val->c_str());
 }
 
 void StringQueue::push(std::string* item)
