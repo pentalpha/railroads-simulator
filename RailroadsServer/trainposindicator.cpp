@@ -50,6 +50,8 @@ bool TrainPosIndicator::isDead(){
 void TrainPosIndicator::UpdatePos(sf::Vector2f newPos, bool dark){
     if(dark){
         shape.setFillColor(darkColor);
+    }else{
+        shape.setFillColor(initialColor);
     }
     shape.setPosition(newPos.x - radius, newPos.y - radius);
     trainName.setPosition(shape.getPosition().x, shape.getPosition().y - radius*2);

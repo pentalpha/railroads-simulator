@@ -109,6 +109,7 @@ public:
     void stop();
     bool updating();
 private:
+    static float valueNotReachingMax(float val, float max, float closeness = 0.1);
     void run();
     void reserveRail(string rail);
     void releaseRail(string rail);

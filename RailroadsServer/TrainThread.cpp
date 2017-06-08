@@ -16,6 +16,16 @@ TrainThread::TrainThread(string id, StringQueue* trainQueue, vector<string> path
     this->off = false;
 }
 
+float TrainThread::valueNotReachingMax(float val, float max, float closeness){
+    if(val < closeness){
+        return closeness;
+    }else if(val > max-closeness){
+        return max-closeness;
+    }else{
+        return val;
+    }
+}
+
 /* Estratégia anti deadlock de 3
  * Antes de requisitar entrar no proximo trilho (T1), verificar:
  *  O prox dps (T2) dele está ocupado por um trem (A)?
@@ -87,7 +97,8 @@ void TrainThread::run()
                     }else{
                         pos += moved;
                     }
-                    canvas->updateTrainPos(railName, pos, name, false);
+                    canvas->updateTrainPos(railName, valueNotReachingMax(pos, railLength),
+                                           name, false);
                     //sleep 10ms/1cs
                     QThread::msleep(10);
                 }
@@ -108,7 +119,7 @@ void TrainThread::run()
             }
         }
         log("TRAIN",name + string(" has finished rail ") + railName);
-        canvas->updateTrainPos(railName, pos, name, true);
+        canvas->updateTrainPos(railName, valueNotReachingMax(pos, railLength), name, true);
         releaseRail(rails[actualRail]);
         actualRail++;
     }
