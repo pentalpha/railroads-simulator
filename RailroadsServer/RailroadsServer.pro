@@ -23,7 +23,8 @@ SOURCES += main.cpp \
     RailroadsServer.cpp \
     logging.cpp \
     events.cpp \
-    TrainThread.cpp
+    TrainThread.cpp \
+    trainschedule.cpp
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -51,7 +52,7 @@ HEADERS += \
     RailroadsServer.h \
     logging.h \
     events.h \
-    TrainThread.h
+    trainschedule.h
 LIBS += -lboost_system
 QMAKE_CXXFLAGS += -pthread -Wl,--no-as-needed -std="c++14" -lpthread
 ### TO ALLOW QSFMLCanvas ###

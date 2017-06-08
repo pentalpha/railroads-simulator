@@ -1,16 +1,19 @@
 #include "RailroadsServer.h"
+#include <QElapsedTimer>
 #include <QString>
 
 TrainThread::TrainThread(string id, StringQueue* trainQueue, vector<string> path,
                          vector<bool> negative, vector<int> lengths,
-                         RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server) :
+                         RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server, float speed) :
     QThread(), name(id), rails(path), negative(negative), railsLength(lengths)
 {
     this->evtQueue = trainQueue;
     this->graph = graph;
     this->canvas = canvas;
     this->server = server;
+    this->kmPerSec = speed;
     exitFlag=false;
+    this->off = false;
 }
 
 /* Estratégia anti deadlock de 3
@@ -46,47 +49,66 @@ bool TrainThread::updating(){
     return !exitFlag;
 }
 
+bool TrainThread::reachedEnd(float pos, float railLength, bool inverse){
+    if(!inverse){
+        return pos >= railLength;
+    }else{
+        return pos <= 0.0;
+    }
+}
+
 void TrainThread::run()
 {
     actualRail = 0;
-    indicator = NULL;
     while(updating()){
         if(actualRail == rails.size()){
             actualRail = 0;
         }
-        reserveRail(rails[actualRail]);
-        server->sendGoToRailMessage(name, rails[actualRail]);
-        pos = -1.0;
-        maximal = false;
-        while(true){
+        string railName = rails[actualRail];
+        reserveRail(railName);
+        float railLength = railsLength[actualRail];
+        bool inverse = negative[actualRail];
+        if(inverse){
+            pos = railLength;
+        }else{
+            pos = 0.0;
+        }
+        QElapsedTimer timer;
+        timer.start();
+        while(!reachedEnd(pos, railLength, inverse)){
             QString m(evtQueue->pop().c_str());
-            if(m != ""){
-                pos = -1.0;
-                maximal = false;
-                try{
-                    pos = m.toDouble();
-                    //if(pos >= 0.001){
-                    //    log(string("TRAIN-") + name, m.toStdString() + string("=") + std::to_string(pos));
-                    //}
-                }catch(...){
-                    if(m == QString("MAX")){
-                        pos = railsLength[actualRail];
-                        maximal = true;
-                    }else if(m == QString("MIN")){
-                        pos = 0.0;
-                        maximal = true;
+            if(m == ""){
+                float milliseconds = timer.elapsed();
+                timer.restart();
+                if(!off){
+                    float moved = (milliseconds/1000.f) * kmPerSec;
+                    if(inverse){
+                        pos -= moved;
                     }else{
-                        error("SERVER", m.toStdString() + string(" is no valid position."));
+                        pos += moved;
+                    }
+                    canvas->updateTrainPos(railName, pos, name, false);
+                    //sleep 10ms/1cs
+                    QThread::msleep(10);
+                }
+            }else{
+                try{
+                    float newSpeed = m.toDouble();
+                    //speed change:
+                    kmPerSec = pos;
+                }catch(...){
+                    if(m == QString("STOP")){
+                        off = true;
+                    }else if(m == QString("PLAY")){
+                        off = false;
+                    }else{
+                        error("SERVER", m.toStdString() + string(" is no valid command to a train."));
                     }
                 }
-                if(pos != -1){
-                    canvas->updateTrainPos(rails[actualRail], pos, name, maximal);
-                }
-            }
-            if(maximal){
-                break;
             }
         }
+        log("TRAIN",name + string(" has finished rail ") + railName);
+        canvas->updateTrainPos(railName, pos, name, true);
         releaseRail(rails[actualRail]);
         actualRail++;
     }

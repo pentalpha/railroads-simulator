@@ -144,16 +144,16 @@ void RailroadsCanvas::addTrain(TrainMove move){
     TrainPosIndicator* train = new TrainPosIndicator(trainPos,
                                                      new string(move.trainID),
                                                      move.dark);
-    actualTrainShapes[move.railName] = train;
+    actualTrainShapes[move.trainID] = train;
 }
 
 void RailroadsCanvas::moveTrain(TrainMove move){
-    TrainPosIndicator* shape = actualTrainShapes[move.railName];
+    TrainPosIndicator* shape = actualTrainShapes[move.trainID];
     if(shape != NULL){
         Rail* rail = graph->getRail(move.railName);
         sf::Vector2f newPos = posFromRailAndDistance(rail, move.pos);
-        log("CANVAS", move.trainID + std::to_string(move.pos)
-            + std::string(" | ") + std::to_string(newPos.x) + std::string(", ") + std::to_string(newPos.y));
+        //log("CANVAS", move.trainID + std::to_string(move.pos)
+        //    + std::string(" | ") + std::to_string(newPos.x) + std::string(", ") + std::to_string(newPos.y));
         shape->UpdatePos(newPos, move.dark);
         //oldShape->Disown();
     }else{

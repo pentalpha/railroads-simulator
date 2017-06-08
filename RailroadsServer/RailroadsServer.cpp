@@ -150,6 +150,34 @@ void RailroadsServer::start(){
   waitingFlag = true;
   tcpServer->waitForNewConnection(nSeconds*1000);
   log("SERVER", "...Finished Waiting for Client!");
+  log("SERVER", "Starting trains");
+  for(TrainSchedule schedule : TrainSchedule::getDefault()){
+    addTrain(schedule);
+  }
+}
+
+void RailroadsServer::addTrain(TrainSchedule schedule){
+    StringQueue* q = Events::registerQueue(schedule.trainName);
+    if(q == NULL){
+        return;
+    }
+    auto negative = negativePaths(schedule.path);
+    auto noNegativeSign = pathWithoutNegativeSign(schedule.path, negative);
+    string absentStr = allRailsInGraph(noNegativeSign);
+    if(absentStr != ""){
+        error("SERVER", string("Some of the rails in the given path could not be found ")
+              + vectorToStr(noNegativeSign) + string(": ") + absentStr);
+        return;
+    }else{
+        log("SERVER", string("All rails informed by ") + schedule.trainName + string(" are valid."));
+    }
+    vector<int> lengths = lengthsOfPath(noNegativeSign);
+    log("SERVER", string("Creating train thread for ") + schedule.trainName);
+    TrainThread* train = new TrainThread(schedule.trainName, q, noNegativeSign, negative,
+                                         lengths, this->graph, this->canvas, this);
+    log("SERVER", string("Starting train thread for ") + schedule.trainName);
+    train->start();
+    trainThreads.insert(train);
 }
 
 bool RailroadsServer::isConnected(){
@@ -192,15 +220,29 @@ void RailroadsServer::treatMessage(std::string message){
         std::string first = words[0];
         words.erase(words.begin());
         std::vector<std::string> params = words;
-        if(first=="POS"){
-            POS(params);
-        }else if(first=="REG"){
-            REG(params);
+        if(first=="SPD" && words.size() == 2){
+            SPD(params);
         }else{
             log("SERVER", std::string("Message is not a POS or REG: ") + message);
         }
     }else{
         log("SERVER", std::string("No words in message: ") + message);
+    }
+}
+
+void RailroadsServer::SPD(std::vector<std::string> words){
+    log("SERVER-SPD", vectorToStr(words));
+    string id = words[0];
+    string newSpeed = words[1];
+    changeTrainSpeed(id, newSpeed);
+}
+
+void RailroadsServer::changeTrainSpeed(std::string trainId, string newSpeed){
+    StringQueue* q = Events::getQueue(trainId);
+    if(q == NULL){
+        error("SERVER", string("No such a train to change speed: ") + trainId + string(": ") + newSpeed);
+    }else{
+        q->push(new string(newSpeed.c_str()));
     }
 }
 

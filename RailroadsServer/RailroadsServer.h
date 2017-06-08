@@ -22,6 +22,7 @@
 #include "events.h"
 #include "RailsGraph.h"
 #include "logging.h"
+#include "trainschedule.h"
 
 class TrainThread;
 
@@ -59,10 +60,13 @@ private:
     void treatMessage(std::string message);
     void msgTreatmentThread();
     void REG(std::vector<std::string> words);
+    void SPD(std::vector<std::string> words);
     void POS(std::vector<std::string> words);
     void sendDenyToID(std::string id);
     void sendAllowToID(string id, vector<int> lengths);
+    void changeTrainSpeed(std::string trainId, string newSpeed);
 
+    void addTrain(TrainSchedule schedule);
     vector<bool> negativePaths(vector<string> path);
     vector<string> pathWithoutNegativeSign(vector<string> path, vector<bool> negative);
     string allRailsInGraph(vector<string> rails);
@@ -94,9 +98,10 @@ class TrainThread : public QThread
 public:
     TrainThread(string id, StringQueue* trainQueue, vector<string> path,
                 vector<bool> negative, vector<int> lengths,
-                RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server);
+                RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server, float speed = 0.5);
     int actualRail;
     string name;
+    bool off;
     TrainPosIndicator* indicator;
     StringQueue* evtQueue;
     double pos;
@@ -107,6 +112,7 @@ private:
     void run();
     void reserveRail(string rail);
     void releaseRail(string rail);
+    bool reachedEnd(float pos, float railLength, bool inverse);
 
     bool exitFlag;
 
@@ -116,6 +122,7 @@ private:
     RailsGraph* graph;
     RailroadsCanvas* canvas;
     RailroadsServer* server;
+    float kmPerSec;
 };
 
 #endif // RAILROADSSERVER_H
