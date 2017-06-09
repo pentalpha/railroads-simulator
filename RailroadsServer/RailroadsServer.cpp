@@ -1,5 +1,6 @@
 #include "RailroadsServer.h"
 #include <thread>
+#include <QTime>
 using namespace std;
 
 RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph0, RailroadsCanvas* canvas0) :
@@ -126,6 +127,7 @@ void RailroadsServer::sendAMessage(){
 }
 
 void RailroadsServer::msgTreatmentThread(){
+    qsrand(QTime::currentTime().msec());
     log("SERVER", "RailroadsServer is ON");
 
     while(!exitFlag || messages.getElements() > 0)
@@ -177,8 +179,13 @@ void RailroadsServer::addTrain(TrainSchedule schedule){
     }
     vector<int> lengths = lengthsOfPath(noNegativeSign);
     log("SERVER", string("Creating train thread for ") + schedule.trainName);
+    float speed = TrainThread::defaultSpeed;
+    int r = qrand() % 10;
+    r -= 5;
+    float change = 0.04*(float)r;
+    speed = speed + change;
     TrainThread* train = new TrainThread(schedule.trainName, q, noNegativeSign, negative,
-                                         lengths, this->graph, this->canvas, this);
+                                         lengths, this->graph, this->canvas, this, speed);
     log("SERVER", string("Starting train thread for ") + schedule.trainName);
     registerTrainOnController(schedule.trainName, train->kmPerSec);
     train->start();
