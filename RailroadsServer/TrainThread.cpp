@@ -105,16 +105,16 @@ void TrainThread::run()
                     QThread::msleep(10);
                 }
             }else{
-                try{
-                    float newSpeed = m.toDouble();
-                    //speed change:
-                    kmPerSec = newSpeed;
-                }catch(...){
-                    if(m == QString("STOP")){
-                        off = true;
-                    }else if(m == QString("PLAY")){
-                        off = false;
-                    }else{
+                if(m == QString("STOP")){
+                    off = true;
+                }else if(m == QString("PLAY")){
+                    off = false;
+                }else{
+                    try{
+                        float newSpeed = m.toDouble();
+                        //speed change:
+                        kmPerSec = newSpeed;
+                    }catch(...){
                         error("SERVER", m.toStdString() + string(" is no valid command to a train."));
                     }
                 }

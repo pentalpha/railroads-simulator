@@ -55,6 +55,12 @@ def sendSpeedUpdate(trainName, newSpeed):
     msg = "SPD " + trainName + " " + newSpeed + "\n"
     sendMsg(msg)
 
+def playOrStopAll(newStatus):
+    if newStatus == "PLAY" or newStatus == "STOP":
+        if(len(trains) > 0):
+            for train in trains:
+                sendSpeedUpdate(train, newStatus)
+
 def splitMsgBySpaces(msg):
     splice = []
     if ' ' in msg:
@@ -219,9 +225,9 @@ def executeMenuOption(menuName, selection):
 
 def runMainMenuOption(selection):
     if selection == 0:
-        pass
+        playOrStopAll("STOP")
     elif selection == 1:
-        pass
+        playOrStopAll("PLAY")
     elif selection == 2:
         cli("TRAINS")
     elif selection == 3:
