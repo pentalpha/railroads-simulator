@@ -3,8 +3,9 @@
 #include <QTime>
 using namespace std;
 
-RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph0, RailroadsCanvas* canvas0) :
-    ipStr(ip.c_str()), portNum(port), m()
+RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph0,
+                                 RailroadsCanvas* canvas0, RailroadsViewer* viewer0)
+    : ipStr(ip.c_str()), portNum(port), m()
 {
     tcpServer = new QTcpServer();
     addr = QHostAddress(ipStr);
@@ -15,6 +16,7 @@ RailroadsServer::RailroadsServer(std::string ip, int port, RailsGraph* graph0, R
 
     this->canvas = canvas0;
     this->graph = graph0;
+    this->viewer = viewer0;
 
     //connect(tcpServer, &QTcpServer::newConnection, this, &RailroadsServer::whenConnected);
     connect(tcpServer, &QTcpServer::newConnection, this, &RailroadsServer::newConnection);
@@ -185,7 +187,7 @@ void RailroadsServer::addTrain(TrainSchedule schedule){
     float change = 0.04*(float)r;
     speed = speed + change;
     TrainThread* train = new TrainThread(schedule.trainName, q, noNegativeSign, negative,
-                                         lengths, this->graph, this->canvas, this, speed);
+                                         lengths, this->graph, this->canvas, this, this->viewer, speed);
     log("SERVER", string("Starting train thread for ") + schedule.trainName);
     registerTrainOnController(schedule.trainName, train->kmPerSec);
     train->start();
@@ -370,7 +372,7 @@ bool RailroadsServer::registerNewTrain(string id, vector<string> path){
     vector<int> lengths = lengthsOfPath(noNegativeSign);
     log("SERVER", string("Creating train thread for ") + id);
     TrainThread* train = new TrainThread(id, q, noNegativeSign, negative,
-                                         lengths, this->graph, this->canvas, this);
+                                         lengths, this->graph, this->canvas, this, this->viewer);
     sendAllowToID(id, lengths);
     log("SERVER", string("Starting train thread for ") + id);
     train->start();

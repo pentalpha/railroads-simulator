@@ -19,7 +19,7 @@ void Global::startServer(QWidget* parent, int port, string ip, string graphPath)
     viewer = new RailroadsViewer(zoom, padding, graph, false, parent);
     viewer->show();
     log("STARTUP", "Startint server...");
-    server = new RailroadsServer(ip.c_str(), port, graph, viewer->canvas);
+    server = new RailroadsServer(ip.c_str(), port, graph, viewer->canvas, viewer);
     server->start();
 }
 

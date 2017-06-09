@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <deque>
 
 void log(std::string origin, std::string message);
 void error(std::string origin, std::string message);

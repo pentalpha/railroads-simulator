@@ -5,6 +5,7 @@
 #include <QThread>
 #include "RailsGraph.h"
 #include "RailroadsCanvas.h"
+#include "TravelMonitor.h"
 
 class RailroadsViewer : public QMainWindow
 {
@@ -14,6 +15,7 @@ public:
     RailroadsViewer(int size, int padding, RailsGraph* graph, bool test = false, QWidget *parent = 0);
     ~RailroadsViewer();
     RailsGraph* graph;
+    TravelMonitor* monitor;
     RailroadsCanvas* canvas;
 };
 

@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     logging.cpp \
     events.cpp \
     TrainThread.cpp \
-    trainschedule.cpp
+    trainschedule.cpp \
+    TravelMonitor.cpp
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -52,7 +53,8 @@ HEADERS += \
     RailroadsServer.h \
     logging.h \
     events.h \
-    trainschedule.h
+    trainschedule.h \
+    TravelMonitor.h
 LIBS += -lboost_system
 QMAKE_CXXFLAGS += -pthread -Wl,--no-as-needed -std="c++14" -lpthread
 ### TO ALLOW QSFMLCanvas ###
@@ -64,4 +66,5 @@ CONFIG(debug, debug|release):
 LIBS += -lsfml-audio -lsfml-graphics -lsfml-network -lsfml-window -lsfml-system
 
 FORMS += \
-    setupdialog.ui
+    setupdialog.ui \
+    TravelMonitor.ui

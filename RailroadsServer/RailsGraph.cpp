@@ -95,9 +95,6 @@ RailsGraph::RailsGraph(std::string graphFilePath)
             }
         }
     }
-    //finished
-    RailsGraph* graph = this;
-    int i = 0;
 }
 
 bool RailsGraph::railInGraph(std::string r){

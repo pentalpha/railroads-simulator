@@ -1,12 +1,11 @@
 #include "RailroadsServer.h"
-#include <QElapsedTimer>
-#include <QString>
 
 const float TrainThread::defaultSpeed = 0.5;
 
 TrainThread::TrainThread(string id, StringQueue* trainQueue, vector<string> path,
                          vector<bool> negative, vector<int> lengths,
-                         RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server, float speed) :
+                         RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server,
+                         RailroadsViewer* viewer, float speed) :
     QThread(), name(id), rails(path), negative(negative), railsLength(lengths)
 {
     this->evtQueue = trainQueue;
@@ -14,6 +13,7 @@ TrainThread::TrainThread(string id, StringQueue* trainQueue, vector<string> path
     this->canvas = canvas;
     this->server = server;
     this->kmPerSec = speed;
+    this->viewer = viewer;
     exitFlag=false;
     this->off = false;
 }
@@ -72,18 +72,29 @@ bool TrainThread::reachedEnd(float pos, float railLength, bool inverse){
 void TrainThread::run()
 {
     actualRail = 0;
+    bool starting = true;
+    QElapsedTimer travelTimer;
+    travelTimer.start();
     while(updating()){
         if(actualRail == rails.size()){
             actualRail = 0;
+            float secs = (float)(travelTimer.elapsed())/1000.0;
+            viewer->monitor->putTravelTime(name, secs);
+            travelTimer.restart();
         }
         string railName = rails[actualRail];
         reserveRail(railName);
         float railLength = railsLength[actualRail];
         bool inverse = negative[actualRail];
-        if(inverse){
-            pos = railLength;
+        if(!starting){
+            if(inverse){
+                pos = railLength;
+            }else{
+                pos = 0.0;
+            }
         }else{
-            pos = 0.0;
+            pos = railLength/2;
+            starting = false;
         }
         QElapsedTimer timer;
         timer.start();

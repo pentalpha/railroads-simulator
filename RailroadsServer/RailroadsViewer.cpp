@@ -1,4 +1,5 @@
 #include "RailroadsViewer.h"
+#include "TravelMonitor.h"
 #include "RailroadsCanvas.h"
 #include "RailsGraph.h"
 #include <chrono>
@@ -23,6 +24,9 @@ RailroadsViewer::RailroadsViewer(int size, int padding, RailsGraph* graph,
         testA->start();
         testB->start();
     }
+
+    monitor = new TravelMonitor(this);
+    monitor->show();
 }
 
 TrainIndicatorsTest::TrainIndicatorsTest(string railName, float speed,

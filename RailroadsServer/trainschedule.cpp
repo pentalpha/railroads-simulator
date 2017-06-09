@@ -22,10 +22,10 @@ vector<TrainSchedule> TrainSchedule::getDefault()
     beta2.path = {"G2","D2","-J2","-O2","-Q"};
     schedules.push_back(beta2);
     TrainSchedule gamma("gamma");
-    gamma.path = {"I","M","P","-H","-E"};
+    gamma.path = {"-H","-E","I","M","P"};
     schedules.push_back(gamma);
     TrainSchedule gamma2("gamma2");
-    gamma2.path = {"M2","I2","E2","-H2","-P"};
+    gamma2.path = {"-H2","-P","M2","I2","E2"};
     schedules.push_back(gamma2);
     TrainSchedule delta("delta");
     delta.path = {"O2", "N2", "-M2", "-M", "-N", "O"};

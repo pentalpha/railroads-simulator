@@ -55,7 +55,7 @@ void RailroadsCanvas::OnUpdate(){
     for(sf::RectangleShape shape : this->railShapes){
         this->draw(shape);
     }
-    drawGridPoints(12);
+    //drawGridPoints(12);
     for(pair<string, TrainPosIndicator*> train : actualTrainShapes){
         train.second->Draw(this);
     }

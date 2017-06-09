@@ -24,13 +24,17 @@
 #include "logging.h"
 #include "trainschedule.h"
 
+#include "RailroadsViewer.h"
+#include <QElapsedTimer>
+#include <QString>
+
 class TrainThread;
 
 class RailroadsServer : public QObject
 {
     Q_OBJECT
 public:
-    RailroadsServer(std::string ip, int port, RailsGraph* graph, RailroadsCanvas* canvas);
+    RailroadsServer(std::string ip, int port, RailsGraph* graph, RailroadsCanvas* canvas, RailroadsViewer* viewer);
     bool isConnected();
     bool isWaiting();
     string getMessage();
@@ -93,6 +97,7 @@ private:
 
     StringQueue messages, toSend;
     RailsGraph* graph;
+    RailroadsViewer* viewer;
 };
 
 class TrainThread : public QThread
@@ -101,7 +106,8 @@ public:
     static const float defaultSpeed;
     TrainThread(string id, StringQueue* trainQueue, vector<string> path,
                 vector<bool> negative, vector<int> lengths,
-                RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server, float speed = defaultSpeed);
+                RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server, RailroadsViewer* viewer,
+                float speed = defaultSpeed);
     int actualRail;
     float kmPerSec;
     string name;
@@ -127,6 +133,7 @@ private:
     RailsGraph* graph;
     RailroadsCanvas* canvas;
     RailroadsServer* server;
+    RailroadsViewer* viewer;
 };
 
 #endif // RAILROADSSERVER_H
