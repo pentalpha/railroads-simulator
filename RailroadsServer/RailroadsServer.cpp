@@ -45,7 +45,7 @@ void RailroadsServer::newConnection(){
     connect(client, &QTcpSocket::disconnected, this, &RailroadsServer::clientDisconnected);
     connect(client, &QTcpSocket::readyRead, this, &RailroadsServer::readAMessage);
     client->startTransaction();
-    log("SERVER", string("Waiting for messages from ") + client->peerAddress().toString().toStdString());
+    log("SERVER", string("Connected to ") + client->peerAddress().toString().toStdString());
     //QtConcurrent::run(this, &RailroadsServer::receiveFromClient);
     //std::thread treater(&RailroadsServer::msgTreatmentThread, this);
     //treater.detach();
@@ -67,7 +67,7 @@ void RailroadsServer::readAMessage(){
         string* line = NULL;
         line = new string(bytes);
         *line = line->substr(0, line->length()-1);
-        log("SERVER", string("Received ") + *line);
+        //log("SERVER", string("Received ") + *line);
         messages.push(line);
     }else if(nRead == -1){
         log("SERVER", "Received -1");
@@ -80,7 +80,7 @@ void RailroadsServer::readAMessage(){
 
 void RailroadsServer::putMessage(std::string msgToSend){
     toSend.push(new string(msgToSend));
-    log("SERVER-MAILBOX", string("Stored message to send later: ") + msgToSend);
+    //log("SERVER-MAILBOX", string("Stored message to send later: ") + msgToSend);
     emit messageToSend();
 }
 
@@ -121,7 +121,7 @@ void RailroadsServer::sendAMessage(){
     }
     else
     {
-        log("SERVER", std::string("Message sent: \n") + msgToSend);
+        //log("SERVER", std::string("Message sent: \n") + msgToSend);
     }
     if(toSend.getElements() > 0){
         sendAMessage();
@@ -130,7 +130,7 @@ void RailroadsServer::sendAMessage(){
 
 void RailroadsServer::msgTreatmentThread(){
     qsrand(QTime::currentTime().msec());
-    log("SERVER", "RailroadsServer is ON");
+    log("SERVER", "RailroadsServer Message Parser is ON");
 
     while(!exitFlag || messages.getElements() > 0)
     {
@@ -145,7 +145,7 @@ void RailroadsServer::msgTreatmentThread(){
         }
     }
 
-    log("SERVER", "RailroadsServer Message Treater is OFF");
+    log("SERVER", "RailroadsServer Message Parser is OFF");
 }
 
 void RailroadsServer::start(){
@@ -154,10 +154,10 @@ void RailroadsServer::start(){
   }
 
   int nSeconds = 1;
-  log("SERVER", "Waiting 1s for client to connect...");
+  //log("SERVER", "Waiting 1s for client to connect...");
   waitingFlag = true;
   tcpServer->waitForNewConnection(nSeconds*1000);
-  log("SERVER", "...Finished Waiting for Client!");
+  //log("SERVER", "...Finished Waiting for Client!");
   log("SERVER", "Starting trains");
   for(TrainSchedule schedule : TrainSchedule::getDefault()){
     addTrain(schedule);
@@ -177,10 +177,10 @@ void RailroadsServer::addTrain(TrainSchedule schedule){
               + vectorToStr(noNegativeSign) + string(": ") + absentStr);
         return;
     }else{
-        log("SERVER", string("All rails informed by ") + schedule.trainName + string(" are valid."));
+        //log("SERVER", string("All rails informed by ") + schedule.trainName + string(" are valid."));
     }
     vector<int> lengths = lengthsOfPath(noNegativeSign);
-    log("SERVER", string("Creating train thread for ") + schedule.trainName);
+    //log("SERVER", string("Creating train thread for ") + schedule.trainName);
     float speed = TrainThread::defaultSpeed;
     int r = qrand() % 10;
     r -= 5;
@@ -251,7 +251,7 @@ void RailroadsServer::treatMessage(std::string message){
 }
 
 void RailroadsServer::SPD(std::vector<std::string> words){
-    log("SERVER-SPD", vectorToStr(words));
+    //log("SERVER-SPD", vectorToStr(words));
     string id = words[0];
     string newSpeed = words[1];
     changeTrainSpeed(id, newSpeed);
@@ -301,7 +301,7 @@ void RailroadsServer::sendGoToRailMessage(string id, string rail){
     message += " ";
     message += rail;
     message += "\n";
-    log("SERVER", message);
+    //log("SERVER", message);
     putMessage(message);
 }
 
@@ -367,10 +367,10 @@ bool RailroadsServer::registerNewTrain(string id, vector<string> path){
         sendDenyToID(id);
         return false;
     }else{
-        log("SERVER", string("All rails informed by ") + id + string(" are valid."));
+        //log("SERVER", string("All rails informed by ") + id + string(" are valid."));
     }
     vector<int> lengths = lengthsOfPath(noNegativeSign);
-    log("SERVER", string("Creating train thread for ") + id);
+    //log("SERVER", string("Creating train thread for ") + id);
     TrainThread* train = new TrainThread(id, q, noNegativeSign, negative,
                                          lengths, this->graph, this->canvas, this, this->viewer);
     sendAllowToID(id, lengths);

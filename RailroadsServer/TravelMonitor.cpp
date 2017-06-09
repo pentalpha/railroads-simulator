@@ -42,7 +42,6 @@ void TravelMonitor::updateData(){
         float avgSquare = avg*avg;
         float squareAvg = xSquareTotal/n;
         float deviation = qSqrt(squareAvg-avgSquare);
-        float last = durations.back();
         avgTravelDuration[trainName] = avg;
         standardDeviation[trainName] = deviation;
     }
