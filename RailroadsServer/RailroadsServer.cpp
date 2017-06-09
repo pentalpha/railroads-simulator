@@ -70,9 +70,9 @@ void RailroadsServer::readAMessage(){
         log("SERVER", "Received -1");
         exitFlag = true;
     }
-    /*if(client->canReadLine()){
+    if(client->canReadLine()){
         readAMessage();
-    }*/
+    }
 }
 
 void RailroadsServer::putMessage(std::string msgToSend){

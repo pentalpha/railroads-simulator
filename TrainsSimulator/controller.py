@@ -46,7 +46,7 @@ def getUptime():
     return time.perf_counter() - startTime
 
 def sendMsg(msg):
-    addToLog("Pushed to send queue: " + msg)
+    #addToLog("Pushed to send queue: " + msg)
     toSend.put(msg)
     #with sendLock:
     #    server.send(msg.encode())
@@ -162,7 +162,7 @@ def connectionLoop(tcpSocket):
             try:
                 if(not sendQueue.empty()):
                     next_msg = sendQueue.get_nowait()
-                    addToLog("Sending: " + next_msg)
+                    #addToLog("Sending: " + next_msg)
                     s.send(next_msg.encode())
             except Exception as e:
                 addToLog(e)
@@ -216,7 +216,7 @@ def runMainMenuOption(selection):
     elif selection == 2:
         cli("TRAINS")
     elif selection == 3:
-        pass
+        updateTrainSpeed("ALL")
     elif selection == 4:
         pass
 
@@ -226,8 +226,53 @@ def runTrainsMenuOption(selection):
 
 def print_log(term):
     print('---- Log with ' + str(len(serverLog)) + ' messages ----')
+    nLogs = 12
     for log in reversed(serverLog):
+        if nLogs < 0:
+            break
         print('{t.normal}{title}'.format(t=term, title=log))
+        nLogs = nLogs-1
+
+def updateTrainSpeed(trainName):
+    if len(trains) == 0:
+        return True
+    newSpeed = 0.5
+    term = Terminal()
+    print(term.clear())
+    text = "New speed for "
+    if(trainName == "ALL"):
+        text = text + "ALL: "
+    else:
+        text = text + trainName + ": "
+        newSpeed = trainSpeed[trainName]
+    term.fullscreen()
+    selecting = True
+    with term.cbreak():
+        while selecting:
+            print(term.clear())
+            print('{t.normal}{title}'.format(t=term, title=text))
+            print('{t.normal}{title}'.format(t=term, title=str(newSpeed)))
+            print('\n')
+            print_log(term)
+            key = term.inkey(timeout=0.5)
+            if key.is_sequence:
+                if key.name == 'KEY_DOWN':
+                    newSpeed = newSpeed - 0.01
+                    if(newSpeed < 0.0):
+                        newSpeed = 0.0
+                if key.name == 'KEY_UP':
+                    newSpeed = newSpeed + 0.01
+                    if(newSpeed > 1.0):
+                        newSpeed = 1.0
+                if key.name == 'KEY_ENTER':
+                    selecting = False
+    if trainName == "ALL" and len(trains) > 0:
+        for train in trains:
+            sendSpeedUpdate(train, str(newSpeed))
+            trainSpeed[train] = newSpeed
+    elif trainName in trains:
+        sendSpeedUpdate(trainName, str(newSpeed))
+        trainSpeed[trainName] = newSpeed
 
 def display_train_list(selection, term):
     if(len(trains) > 0):

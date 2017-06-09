@@ -108,7 +108,7 @@ void TrainThread::run()
                 try{
                     float newSpeed = m.toDouble();
                     //speed change:
-                    kmPerSec = pos;
+                    kmPerSec = newSpeed;
                 }catch(...){
                     if(m == QString("STOP")){
                         off = true;
