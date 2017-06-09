@@ -65,6 +65,8 @@ private:
     void sendDenyToID(std::string id);
     void sendAllowToID(string id, vector<int> lengths);
     void changeTrainSpeed(std::string trainId, string newSpeed);
+    void registerTrainOnController(string name, float speed);
+
 
     void addTrain(TrainSchedule schedule);
     vector<bool> negativePaths(vector<string> path);
@@ -96,10 +98,12 @@ private:
 class TrainThread : public QThread
 {
 public:
+    static const float defaultSpeed;
     TrainThread(string id, StringQueue* trainQueue, vector<string> path,
                 vector<bool> negative, vector<int> lengths,
-                RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server, float speed = 0.5);
+                RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server, float speed = defaultSpeed);
     int actualRail;
+    float kmPerSec;
     string name;
     bool off;
     TrainPosIndicator* indicator;
@@ -123,7 +127,6 @@ private:
     RailsGraph* graph;
     RailroadsCanvas* canvas;
     RailroadsServer* server;
-    float kmPerSec;
 };
 
 #endif // RAILROADSSERVER_H

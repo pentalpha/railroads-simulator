@@ -47,6 +47,7 @@ void RailroadsServer::newConnection(){
     //std::thread treater(&RailroadsServer::msgTreatmentThread, this);
     //treater.detach();
     QtConcurrent::run(this, &RailroadsServer::msgTreatmentThread);
+    sendAMessage();
 }
 
 void RailroadsServer::readAMessage(){
@@ -82,15 +83,18 @@ void RailroadsServer::putMessage(std::string msgToSend){
 
 void RailroadsServer::sendAMessage(){
     if(!connected){
+        error("SERVER", "Cannot send a message: Client is not connected");
         return;
     }else if (client == NULL){
+        error("SERVER", "Cannot send a message: Client is null");
         return;
     }else if (!client->isWritable()){
-        error("SERVER", "Client is not writable");
+        error("SERVER", "Cannot send a message: Client is not writable");
         return;
     }
     string msgToSend = toSend.pop();
     if(msgToSend == ""){
+        error("SERVER", "Cannot send a message: Empty message");
         return;
     }
     int strLen = msgToSend.length();
@@ -116,9 +120,9 @@ void RailroadsServer::sendAMessage(){
     {
         log("SERVER", std::string("Message sent: \n") + msgToSend);
     }
-    /*if(toSend.getElements() > 0){
+    if(toSend.getElements() > 0){
         sendAMessage();
-    }*/
+    }
 }
 
 void RailroadsServer::msgTreatmentThread(){
@@ -176,8 +180,15 @@ void RailroadsServer::addTrain(TrainSchedule schedule){
     TrainThread* train = new TrainThread(schedule.trainName, q, noNegativeSign, negative,
                                          lengths, this->graph, this->canvas, this);
     log("SERVER", string("Starting train thread for ") + schedule.trainName);
+    registerTrainOnController(schedule.trainName, train->kmPerSec);
     train->start();
     trainThreads.insert(train);
+}
+
+void RailroadsServer::registerTrainOnController(string name, float speed){
+    string speedStr = std::to_string(speed);
+    string msg = string("REG ") + name + string(" ") + speedStr + string("\n");
+    putMessage(msg);
 }
 
 bool RailroadsServer::isConnected(){

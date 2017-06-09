@@ -2,6 +2,8 @@
 #include <QElapsedTimer>
 #include <QString>
 
+const float TrainThread::defaultSpeed = 0.5;
+
 TrainThread::TrainThread(string id, StringQueue* trainQueue, vector<string> path,
                          vector<bool> negative, vector<int> lengths,
                          RailsGraph* graph, RailroadsCanvas* canvas, RailroadsServer* server, float speed) :
@@ -40,15 +42,15 @@ float TrainThread::valueNotReachingMax(float val, float max, float closeness){
  */
 
 void TrainThread::reserveRail(string rail){
-    log("SERVER", string("Trying to enter critical region ") + rail);
+    //log("SERVER", string("Trying to enter critical region ") + rail);
     graph->semaphores[rail]->acquire();
-    log("SERVER", string("Entered critical region ") + rail);
+    //log("SERVER", string("Entered critical region ") + rail);
 }
 
 void TrainThread::releaseRail(string rail){
-    log("SERVER", string("Trying to exit critical region ") + rail);
+    //log("SERVER", string("Trying to exit critical region ") + rail);
     graph->semaphores[rail]->release();
-    log("SERVER", string("Exited critical region ") + rail);
+    //log("SERVER", string("Exited critical region ") + rail);
 }
 
 void TrainThread::stop(){
@@ -118,7 +120,7 @@ void TrainThread::run()
                 }
             }
         }
-        log("TRAIN",name + string(" has finished rail ") + railName);
+        //log("TRAIN",name + string(" has finished rail ") + railName);
         canvas->updateTrainPos(railName, valueNotReachingMax(pos, railLength), name, true);
         releaseRail(rails[actualRail]);
         actualRail++;
