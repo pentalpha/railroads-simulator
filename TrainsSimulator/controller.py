@@ -176,6 +176,15 @@ def connectionLoop(tcpSocket):
             addToLog("Finishing because socket is in exceptional set")
             finish(s)
 
+def getTrainX(selection):
+    if(len(trains) >= selection+1):
+        for train in trains:
+            if(selection == 0):
+                return train
+            selection = selection - 1
+    else:
+        return ""
+
 def printMenu(screenName, selection):
     if(screenName == "TRAINS"):
         return trainListScreen(selection)
@@ -222,7 +231,7 @@ def runMainMenuOption(selection):
 
 def runTrainsMenuOption(selection):
     if(len(trains) > 0):
-        pass
+        updateTrainSpeed(getTrainX(selection))
 
 def print_log(term):
     print('---- Log with ' + str(len(serverLog)) + ' messages ----')
@@ -242,6 +251,8 @@ def updateTrainSpeed(trainName):
     text = "New speed for "
     if(trainName == "ALL"):
         text = text + "ALL: "
+    elif(trainName == ""):
+        return
     else:
         text = text + trainName + ": "
         newSpeed = trainSpeed[trainName]
